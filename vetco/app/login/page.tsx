@@ -1,30 +1,64 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useToast } from "@/components/ui/use-toast"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const router = useRouter()
-  const { toast } = useToast()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
+
+  // ✅ Use API base URL from .env.local
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    // Add login logic here
-    // For now, we'll just show a success toast and redirect to the dashboard
-    toast({
-      title: "Logged in successfully",
-      description: "Welcome back to VetCo!",
-    })
-    router.push("/dashboard")
-  }
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
+      }
+
+      // Save token to localStorage
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // Show success message
+      toast({
+        title: "Logged in successfully",
+        description: `Welcome back, ${data.user.fullName}!`,
+      });
+
+      // Redirect to dashboard
+      router.push("/dashboard");
+    } catch (error) {
+      toast({
+        title: "Login failed",
+        description: (error as any).message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="container mx-auto flex min-h-screen items-center justify-center px-4 py-12">
@@ -56,8 +90,8 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full">
-              Log in
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Logging in..." : "Log in"}
             </Button>
           </form>
         </CardContent>
@@ -71,6 +105,5 @@ export default function LoginPage() {
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }
-
