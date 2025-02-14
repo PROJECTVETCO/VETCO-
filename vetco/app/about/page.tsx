@@ -176,7 +176,7 @@ export default function AboutPage() {
               <Button size="lg" variant="secondary" asChild>
                 <Link href="/signup?type=farmer">Join as a Farmer</Link>
               </Button>
-              <Button size="lg" variant="outline" asChild>
+              <Button size="lg" variant="secondary" asChild>
                 <Link href="/signup?type=vet">Join as a Vet</Link>
               </Button>
             </div>
