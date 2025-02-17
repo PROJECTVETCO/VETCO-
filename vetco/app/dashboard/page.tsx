@@ -1,9 +1,13 @@
+'use client'
+import { useState } from "react";
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, MessageSquare, Users, Activity } from "lucide-react"
+import NewAppointmentModal from "@/components/NewAppointmentModal";
 import Link from "next/link"
 
 export default function DashboardPage() {
+  const [refreshAppointments, setRefreshAppointments] = useState(false);
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
@@ -51,7 +55,7 @@ export default function DashboardPage() {
         <div className="border-b">
           <div className="flex h-14 items-center justify-between px-4">
             <h1 className="text-lg font-semibold">Dashboard</h1>
-            <Button>New Appointment</Button>
+            <NewAppointmentModal onAppointmentCreated={() => setRefreshAppointments(!refreshAppointments)} />
           </div>
         </div>
 
