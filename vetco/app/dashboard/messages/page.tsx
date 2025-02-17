@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input"; 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, Users, Activity, Calendar } from "lucide-react";
 import NewMessageModal from "@/components/NewMessageModal";
@@ -17,7 +18,11 @@ export default function MessagesPage() {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [refreshMessages, setRefreshMessages] = useState(false);
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const [replyMessage, setReplyMessage] = useState("");
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [loadingReply, setLoadingReply] = useState(false);
+
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
   useEffect(() => {
     async function fetchMessages() {
@@ -38,6 +43,41 @@ export default function MessagesPage() {
 
     fetchMessages();
   }, [refreshMessages]);
+
+  const handleReply = async () => {
+    if (!replyMessage.trim() || !replyingTo) return;
+    setLoadingReply(true);
+
+    const storedUser = localStorage.getItem("user");
+    const user = storedUser ? JSON.parse(storedUser) : null;
+    const senderId = user?._id;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/messages/send`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sender: senderId,
+          recipient: replyingTo,
+          content: replyMessage,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to send reply");
+      }
+
+      setReplyMessage("");
+      setReplyingTo(null);
+      setRefreshMessages(!refreshMessages);
+    } catch (error) {
+      console.error("Error sending reply:", error);
+    } finally {
+      setLoadingReply(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen">
@@ -135,19 +175,36 @@ export default function MessagesPage() {
               {messages.length > 0 ? (
                 <div className="space-y-4">
                   {messages.map((msg) => (
-                    <div key={msg._id} className="flex items-center gap-4 border-b pb-2">
-                      <div className="h-8 w-8 rounded-full bg-blue-200 flex items-center justify-center text-sm font-semibold">
-                        {msg.sender.fullName.charAt(0)}
+                    <div key={msg._id} className="border-b pb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="h-8 w-8 rounded-full bg-blue-200 flex items-center justify-center text-sm font-semibold">
+                          {msg.sender.fullName.charAt(0)}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">
+                            {msg.sender.fullName} → {msg.recipient.fullName}
+                          </p>
+                          <p className="text-sm text-muted-foreground">{msg.content}</p>
+                        </div>
+                        <Button size="sm" onClick={() => setReplyingTo(msg.sender._id)}>
+                          Reply
+                        </Button>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">
-                          {msg.sender.fullName} → {msg.recipient.fullName}
-                        </p>
-                        <p className="text-sm text-muted-foreground">{msg.content}</p>
-                      </div>
-                      <Button size="sm" onClick={() => console.log(`Reply to ${msg.sender.fullName}`)}>
-                        Reply
-                      </Button>
+
+                      {/* Reply Input Box */}
+                      {replyingTo === msg.sender._id && (
+                        <div className="mt-2 flex gap-2">
+                          <Input
+                            type="text"
+                            placeholder="Type your reply..."
+                            value={replyMessage}
+                            onChange={(e) => setReplyMessage(e.target.value)}
+                          />
+                          <Button onClick={handleReply} disabled={loadingReply}>
+                            {loadingReply ? "Sending..." : "Send"}
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -156,6 +213,13 @@ export default function MessagesPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Refresh Messages Button */}
+          <div className="mt-4 flex justify-end">
+            <Button onClick={() => setRefreshMessages(!refreshMessages)} variant="outline">
+              Refresh Messages
+            </Button>
+          </div>
         </div>
       </main>
     </div>
