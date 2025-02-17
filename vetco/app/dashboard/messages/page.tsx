@@ -1,9 +1,44 @@
+'use client'
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, Users, Activity, Calendar } from "lucide-react";
+import NewMessageModal from "@/components/NewMessageModal";
 import Link from "next/link";
 
 export default function MessagesPage() {
+  interface Message {
+    _id: string;
+    sender: { _id: string; fullName: string };
+    recipient: { _id: string; fullName: string };
+    content: string;
+    createdAt: string;
+  }
+
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [refreshMessages, setRefreshMessages] = useState(false);
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+  useEffect(() => {
+    async function fetchMessages() {
+      const storedUser = localStorage.getItem("user");
+      const user = storedUser ? JSON.parse(storedUser) : null;
+      const userId = user?._id;
+
+      if (!userId) return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/messages/recent/${userId}`);
+        const data = await response.json();
+        setMessages(data);
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+      }
+    }
+
+    fetchMessages();
+  }, [refreshMessages]);
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
@@ -48,10 +83,10 @@ export default function MessagesPage() {
 
       {/* Main Content */}
       <main className="flex-1">
-        <div className="border-b">
+      <div className="border-b">
           <div className="flex h-14 items-center justify-between px-4">
             <h1 className="text-lg font-semibold">Messages</h1>
-            <Button>New Message</Button>
+            <NewMessageModal onMessageSent={() => setRefreshMessages(!refreshMessages)} />
           </div>
         </div>
 
@@ -97,40 +132,28 @@ export default function MessagesPage() {
               <CardDescription>Your latest messages</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="h-8 w-8 rounded-full bg-green-100"></div>
-                  <div>
-                    <p className="text-sm font-medium">Dr. Smith</p>
-                    <p className="text-sm text-muted-foreground">"The vaccination is scheduled for next week."</p>
-                  </div>
-                  <span className="text-xs text-muted-foreground">10m ago</span>
+              {messages.length > 0 ? (
+                <div className="space-y-4">
+                  {messages.map((msg) => (
+                    <div key={msg._id} className="flex items-center gap-4 border-b pb-2">
+                      <div className="h-8 w-8 rounded-full bg-blue-200 flex items-center justify-center text-sm font-semibold">
+                        {msg.sender.fullName.charAt(0)}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">
+                          {msg.sender.fullName} → {msg.recipient.fullName}
+                        </p>
+                        <p className="text-sm text-muted-foreground">{msg.content}</p>
+                      </div>
+                      <Button size="sm" onClick={() => console.log(`Reply to ${msg.sender.fullName}`)}>
+                        Reply
+                      </Button>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="h-8 w-8 rounded-full bg-blue-100"></div>
-                  <div>
-                    <p className="text-sm font-medium">John Doe</p>
-                    <p className="text-sm text-muted-foreground">"Do you have availability this Friday?"</p>
-                  </div>
-                  <span className="text-xs text-muted-foreground">30m ago</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="h-8 w-8 rounded-full bg-yellow-100"></div>
-                  <div>
-                    <p className="text-sm font-medium">Alice Brown</p>
-                    <p className="text-sm text-muted-foreground">"Thanks for the check-up reminder!"</p>
-                  </div>
-                  <span className="text-xs text-muted-foreground">2h ago</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="h-8 w-8 rounded-full bg-red-100"></div>
-                  <div>
-                    <p className="text-sm font-medium">Dr. Adams</p>
-                    <p className="text-sm text-muted-foreground">"Let's reschedule the consultation."</p>
-                  </div>
-                  <span className="text-xs text-muted-foreground">Yesterday</span>
-                </div>
-              </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No messages yet.</p>
+              )}
             </CardContent>
           </Card>
         </div>

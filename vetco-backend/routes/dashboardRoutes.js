@@ -36,4 +36,36 @@ router.get("/appointments", async (req, res) => {
   }
 });
 
+// ✅ GET /api/dashboard/stats - Fetch total appointments
+router.get("/stats", async (req, res) => {
+  try {
+    const totalAppointments = await Appointment.countDocuments();
+    res.status(200).json({
+      totalAppointments,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error. Try again later." });
+  }
+});
+
+// ✅ GET /api/dashboard/recent-activity - Fetch recent appointments as activity
+router.get("/recent-activity", async (req, res) => {
+  try {
+    const recentAppointments = await Appointment.find().sort({ createdAt: -1 }).limit(5);
+    const activity = recentAppointments.map((appt) => ({
+      id: appt._id,
+      type: "appointment",
+      status: "New appointment scheduled",
+      description: `${appt.clientName} - ${new Date(appt.date).toLocaleDateString()} at ${appt.time}`,
+      color: "green",
+    }));
+
+    res.status(200).json(activity);
+  } catch (error) {
+    res.status(500).json({ message: "Server error. Try again later." });
+  }
+});
+
+
+
 module.exports = router;

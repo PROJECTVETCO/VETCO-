@@ -1,9 +1,40 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, MessageSquare, Users, Activity } from "lucide-react";
 import Link from "next/link";
 
 export default function AppointmentsPage() {
+  interface Appointment {
+    _id: string;
+    title: string;
+    date: string;
+    time: string;
+    clientName: string;
+  }
+
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+  useEffect(() => {
+    async function fetchAppointments() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/dashboard/appointments`);
+        const data = await response.json();
+        setAppointments(data);
+      } catch (error) {
+        console.error("Error fetching appointments:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchAppointments();
+  }, []);
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
@@ -15,31 +46,19 @@ export default function AppointmentsPage() {
           </Link>
         </div>
         <nav className="space-y-1 p-4">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
-          >
+          <Link href="/dashboard" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent">
             <Activity className="h-4 w-4" />
             Dashboard
           </Link>
-          <Link
-            href="/dashboard/appointments"
-            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-          >
+          <Link href="/dashboard/appointments" className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
             <Calendar className="h-4 w-4" />
             Appointments
           </Link>
-          <Link
-            href="/dashboard/messages"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
-          >
+          <Link href="/dashboard/messages" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent">
             <MessageSquare className="h-4 w-4" />
             Messages
           </Link>
-          <Link
-            href="/dashboard/network"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
-          >
+          <Link href="/dashboard/network" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent">
             <Users className="h-4 w-4" />
             Network
           </Link>
@@ -64,8 +83,8 @@ export default function AppointmentsPage() {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">12</div>
-                <p className="text-xs text-muted-foreground">+2 from last month</p>
+                <div className="text-2xl font-bold">{appointments.length}</div>
+                <p className="text-xs text-muted-foreground">Total scheduled</p>
               </CardContent>
             </Card>
             <Card>
@@ -74,7 +93,9 @@ export default function AppointmentsPage() {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">4</div>
+                <div className="text-2xl font-bold">
+                  {appointments.filter((a) => new Date(a.date) > new Date()).length}
+                </div>
                 <p className="text-xs text-muted-foreground">Scheduled this week</p>
               </CardContent>
             </Card>
@@ -97,29 +118,25 @@ export default function AppointmentsPage() {
               <CardDescription>Next scheduled appointments</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="h-8 w-8 rounded-full bg-green-100"></div>
-                  <div>
-                    <p className="text-sm font-medium">Cattle Checkup</p>
-                    <p className="text-sm text-muted-foreground">Tomorrow at 10:00 AM - Dr. Smith</p>
-                  </div>
+              {loading ? (
+                <p>Loading appointments...</p>
+              ) : appointments.length === 0 ? (
+                <p className="text-muted-foreground">No upcoming appointments.</p>
+              ) : (
+                <div className="space-y-4">
+                  {appointments.map((appointment) => (
+                    <div key={appointment._id} className="flex items-center gap-4">
+                      <div className="h-8 w-8 rounded-full bg-green-100"></div>
+                      <div>
+                        <p className="text-sm font-medium">{appointment.title}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(appointment.date).toLocaleDateString()} at {appointment.time} - {appointment.clientName}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="h-8 w-8 rounded-full bg-blue-100"></div>
-                  <div>
-                    <p className="text-sm font-medium">Vaccination</p>
-                    <p className="text-sm text-muted-foreground">Feb 16, 3:00 PM - Dr. Williams</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="h-8 w-8 rounded-full bg-yellow-100"></div>
-                  <div>
-                    <p className="text-sm font-medium">Surgery Consultation</p>
-                    <p className="text-sm text-muted-foreground">Feb 18, 1:30 PM - Dr. Adams</p>
-                  </div>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </div>
