@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation"; // ✅ Use correct navigation hook
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, MessageSquare, Users, Activity } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/router";
 
 export default function AppointmentsPage() {
   interface Appointment {
@@ -19,7 +19,7 @@ export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter
+  const router = useRouter();
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -28,18 +28,19 @@ export default function AppointmentsPage() {
       setLoading(true);
       setError(null);
 
-      // ✅ Get user details from localStorage
+      if (typeof window === "undefined") return; // ✅ Prevent issues during build
+
       const storedUser = localStorage.getItem("user");
       const token = localStorage.getItem("token");
 
       if (!storedUser || !token) {
         setError("Unauthorized. Please log in.");
-        router.push("/login"); // Redirect to login
+        router.push("/login"); // ✅ Redirect to login page
         return;
       }
 
       const user = JSON.parse(storedUser);
-      const userId = user._id; // ✅ Extract userId
+      const userId = user._id; // ✅ Get userId
 
       try {
         const response = await fetch(`${API_BASE_URL}/api/dashboard/appointments/user/${userId}`, {
@@ -52,7 +53,7 @@ export default function AppointmentsPage() {
 
         if (response.status === 401) {
           setError("Unauthorized. Please log in again.");
-          localStorage.removeItem("token"); // Remove invalid token
+          localStorage.removeItem("token");
           router.push("/login"); // Redirect to login
           return;
         }
@@ -73,7 +74,6 @@ export default function AppointmentsPage() {
 
     fetchAppointments();
   }, []);
-
 
   return (
     <div className="flex min-h-screen">
@@ -127,28 +127,6 @@ export default function AppointmentsPage() {
                 <p className="text-xs text-muted-foreground">Total scheduled</p>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Upcoming Appointments</CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {appointments.filter((a) => new Date(a.date) > new Date()).length}
-                </div>
-                <p className="text-xs text-muted-foreground">Scheduled this week</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Cancelled Appointments</CardTitle>
-                <Activity className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">1</div>
-                <p className="text-xs text-muted-foreground">Last 30 days</p>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Recent Appointments */}
@@ -160,6 +138,8 @@ export default function AppointmentsPage() {
             <CardContent>
               {loading ? (
                 <p>Loading appointments...</p>
+              ) : error ? (
+                <p className="text-red-500 text-sm">{error}</p>
               ) : appointments.length === 0 ? (
                 <p className="text-muted-foreground">No upcoming appointments.</p>
               ) : (
