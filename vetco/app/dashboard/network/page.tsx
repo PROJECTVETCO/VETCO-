@@ -1,24 +1,88 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Users, Activity, Store, Tractor, Search } from "lucide-react";
+import { Users, Activity, Calendar, Search } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-
-const businesses = [
-  { name: "Green Pastures Farm", type: "Farm", location: "New York, USA", img: "/farm1.jpg" },
-  { name: "Healthy Cattle Vet", type: "Vet Shop", location: "Texas, USA", img: "/vet1.jpg" },
-  { name: "Sunrise Poultry", type: "Farm", location: "California, USA", img: "/farm2.jpg" },
-];
 
 export default function NetworkPage() {
-  const [search, setSearch] = useState("");
+  interface Appointment {
+    _id: string;
+    title: string;
+    date: string;
+    time: string;
+    clientName: string;
+  }
 
-  const filteredBusinesses = businesses.filter((b) =>
-    b.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      setLoading(true);
+      setError(null);
+
+      const storedUser = localStorage.getItem("user");
+      const storedToken = localStorage.getItem("token"); // Get token from localStorage
+
+      const user = storedUser ? JSON.parse(storedUser) : null;
+      const userId = user?._id;
+
+      if (!userId) {
+        setError("User not found. Please log in.");
+        setLoading(false);
+        return;
+      }
+
+      if (!storedToken) {
+        setError("Unauthorized. Please log in again.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/dashboard/appointments/user/${userId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${storedToken}`, // Add token to request
+          },
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) throw new Error("Unauthorized. Please log in again.");
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid data format. Expected an array.");
+        }
+
+        setAppointments(data);
+      } catch (error: any) {
+        console.error("Error fetching appointments:", error);
+        setError(error.message || "Failed to fetch appointments.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAppointments();
+  }, []);
+
+  // Ensure `appointments` is always an array before filtering
+  const filteredAppointments = Array.isArray(appointments)
+    ? appointments.filter((appointment) =>
+        appointment.title.toLowerCase().includes(search.toLowerCase())
+      )
+    : [];
 
   return (
     <div className="flex min-h-screen">
@@ -42,7 +106,7 @@ export default function NetworkPage() {
             href="/dashboard/appointments"
             className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
           >
-            <Tractor className="h-4 w-4" />
+            <Calendar className="h-4 w-4" />
             Appointments
           </Link>
           <Link
@@ -56,8 +120,8 @@ export default function NetworkPage() {
             href="/dashboard/network"
             className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
           >
-            <Store className="h-4 w-4" />
-            Network
+            <Users className="h-4 w-4" />
+            My Records
           </Link>
         </nav>
       </aside>
@@ -66,76 +130,48 @@ export default function NetworkPage() {
       <main className="flex-1">
         <div className="border-b">
           <div className="flex h-14 items-center justify-between px-4">
-            <h1 className="text-lg font-semibold">Network</h1>
-            <Button>Add Business</Button>
+            <h1 className="text-lg font-semibold">My Appointments & Records</h1>
+            <Button>Add Record</Button>
           </div>
         </div>
 
         <div className="p-4">
-          {/* Network Summary */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Farms</CardTitle>
-                <Tractor className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">15</div>
-                <p className="text-xs text-muted-foreground">+2 from last month</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Vet Shops</CardTitle>
-                <Store className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">8</div>
-                <p className="text-xs text-muted-foreground">+1 from last month</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Connected Businesses</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">23</div>
-                <p className="text-xs text-muted-foreground">+3 from last month</p>
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Search Bar */}
-          <div className="mt-6 flex items-center gap-2">
+          <div className="mt-4 flex items-center gap-2">
             <Search className="h-5 w-5 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search businesses..."
+              placeholder="Search appointments..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full max-w-lg"
             />
           </div>
 
-          {/* Business Listings */}
+          {/* Error Message */}
+          {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
+
+          {/* Appointment Listings */}
           <div className="grid gap-4 mt-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredBusinesses.map((business, index) => (
-              <Card key={index}>
-                <img
-                  src={business.img}
-                  alt={business.name}
-                  className="h-40 w-full object-cover rounded-t-md"
-                />
-                <CardHeader>
-                  <CardTitle>{business.name}</CardTitle>
-                  <CardDescription>{business.type} - {business.location}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="outline">View Profile</Button>
-                </CardContent>
-              </Card>
-            ))}
+            {loading ? (
+              <p className="text-center text-sm text-muted-foreground">Loading records...</p>
+            ) : filteredAppointments.length > 0 ? (
+              filteredAppointments.map((appointment) => (
+                <Card key={appointment._id}>
+                  <CardHeader>
+                    <CardTitle>{appointment.title}</CardTitle>
+                    <CardDescription>
+                      {appointment.clientName} | {appointment.date} at {appointment.time}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button variant="outline">View Details</Button>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <p className="text-center text-sm text-muted-foreground">No records found.</p>
+            )}
           </div>
         </div>
       </main>

@@ -12,6 +12,7 @@ export default function NewAppointmentModal({ onAppointmentCreated }: { onAppoin
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [clientName, setClientName] = useState("");
+  const [vetId, setVetId] = useState(""); // Optional vet assignment
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -21,17 +22,38 @@ export default function NewAppointmentModal({ onAppointmentCreated }: { onAppoin
     e.preventDefault();
     setLoading(true);
 
+    const storedUser = localStorage.getItem("user");
+    const user = storedUser ? JSON.parse(storedUser) : null;
+    const token = localStorage.getItem("token");
+
+    if (!user || !token) {
+      toast({
+        title: "Unauthorized",
+        description: "Please log in to create an appointment.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/dashboard/appointments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // ✅ Include authentication token
         },
-        body: JSON.stringify({ title, date, time, clientName }),
+        body: JSON.stringify({
+          title,
+          date,
+          time,
+          clientName,
+          vetId: vetId || null, // Optional
+        }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create appointment");
+        throw new Error(`Failed to create appointment: ${response.statusText}`);
       }
 
       toast({
@@ -45,10 +67,11 @@ export default function NewAppointmentModal({ onAppointmentCreated }: { onAppoin
       setDate("");
       setTime("");
       setClientName("");
+      setVetId("");
 
       // Notify parent to refresh appointments
       onAppointmentCreated();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "❌ Error",
         description: error.message,
@@ -84,6 +107,10 @@ export default function NewAppointmentModal({ onAppointmentCreated }: { onAppoin
           <div>
             <Label htmlFor="clientName">Client Name</Label>
             <Input id="clientName" value={clientName} onChange={(e) => setClientName(e.target.value)} required />
+          </div>
+          <div>
+            <Label htmlFor="vetId">Assign a Veterinarian (Optional)</Label>
+            <Input id="vetId" value={vetId} onChange={(e) => setVetId(e.target.value)} placeholder="Vet ID (if available)" />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Saving..." : "Create Appointment"}

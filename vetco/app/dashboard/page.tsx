@@ -22,25 +22,59 @@ export default function DashboardPage() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        // Fetch total appointments
-        const statsResponse = await fetch(`${API_BASE_URL}/api/dashboard/stats`);
-        const statsData = await statsResponse.json();
-        setTotalAppointments(statsData.totalAppointments);
+  async function fetchData() {
+    setLoading(true);
+    const token = localStorage.getItem("token");
 
-        // Fetch recent activity
-        const activityResponse = await fetch(`${API_BASE_URL}/api/dashboard/recent-activity`);
-        const activityData = await activityResponse.json();
-        setRecentActivity(activityData);
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      } finally {
-        setLoading(false);
-      }
+    if (!token) {
+      console.error("No authentication token found. Redirecting to login...");
+      return;
     }
-    fetchData();
-  }, [refreshAppointments]);
+
+    try {
+      // Fetch total appointments
+      const statsResponse = await fetch(`${API_BASE_URL}/api/dashboard/stats`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // ✅ Send token for authentication
+        },
+      });
+
+      if (!statsResponse.ok) {
+        throw new Error(`Stats Fetch Error: ${statsResponse.statusText}`);
+      }
+
+      const statsData = await statsResponse.json();
+      setTotalAppointments(statsData.totalAppointments);
+
+      // Fetch recent activity
+      const activityResponse = await fetch(`${API_BASE_URL}/api/dashboard/recent-activity`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // ✅ Send token for authentication
+        },
+      });
+
+      if (!activityResponse.ok) {
+        throw new Error(`Activity Fetch Error: ${activityResponse.statusText}`);
+      }
+
+      const activityData = await activityResponse.json();
+      setRecentActivity(activityData);
+
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      setError(error.message || "Failed to fetch data.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  fetchData();
+}, [refreshAppointments]);
+
 
   return (
     <div className="flex min-h-screen">
