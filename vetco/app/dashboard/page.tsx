@@ -23,63 +23,24 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function fetchData() {
-      setLoading(true);
-      const token = localStorage.getItem("token");
-  
-      if (!token) {
-        console.error("❌ No authentication token found. Redirecting to login...");
-        return;
-      }
-  
-      console.log("✅ Sending token:", token); // Log the token before API calls
-  
       try {
         // Fetch total appointments
-        const statsResponse = await fetch(`${API_BASE_URL}/api/dashboard/stats`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`, // ✅ Ensure token is sent
-          },
-        });
-  
-        if (!statsResponse.ok) {
-          console.error(`❌ Stats Fetch Error (${statsResponse.status}):`, await statsResponse.text());
-          throw new Error(`Stats Fetch Error: ${statsResponse.statusText}`);
-        }
-  
+        const statsResponse = await fetch(`${API_BASE_URL}/api/dashboard/stats`);
         const statsData = await statsResponse.json();
         setTotalAppointments(statsData.totalAppointments);
-  
+
         // Fetch recent activity
-        const activityResponse = await fetch(`${API_BASE_URL}/api/dashboard/recent-activity`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`, // ✅ Ensure token is sent
-          },
-        });
-  
-        if (!activityResponse.ok) {
-          console.error(`❌ Activity Fetch Error (${activityResponse.status}):`, await activityResponse.text());
-          throw new Error(`Activity Fetch Error: ${activityResponse.statusText}`);
-        }
-  
+        const activityResponse = await fetch(`${API_BASE_URL}/api/dashboard/recent-activity`);
         const activityData = await activityResponse.json();
         setRecentActivity(activityData);
-  
       } catch (error) {
-        console.error("🔥 Error fetching dashboard data:", error);
-        setError(error.message || "Failed to fetch data.");
+        console.error("Error fetching dashboard data:", error);
       } finally {
         setLoading(false);
       }
     }
-  
     fetchData();
   }, [refreshAppointments]);
-  
-
 
   return (
     <div className="flex min-h-screen">
