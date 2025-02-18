@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, MessageSquare, Users, Activity } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 export default function AppointmentsPage() {
   interface Appointment {
@@ -17,23 +18,62 @@ export default function AppointmentsPage() {
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   useEffect(() => {
     async function fetchAppointments() {
+      setLoading(true);
+      setError(null);
+
+      // ✅ Get user details from localStorage
+      const storedUser = localStorage.getItem("user");
+      const token = localStorage.getItem("token");
+
+      if (!storedUser || !token) {
+        setError("Unauthorized. Please log in.");
+        router.push("/login"); // Redirect to login
+        return;
+      }
+
+      const user = JSON.parse(storedUser);
+      const userId = user._id; // ✅ Extract userId
+
       try {
-        const response = await fetch(`${API_BASE_URL}/api/dashboard/appointments`);
+        const response = await fetch(`${API_BASE_URL}/api/dashboard/appointments/user/${userId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // ✅ Send token
+          },
+        });
+
+        if (response.status === 401) {
+          setError("Unauthorized. Please log in again.");
+          localStorage.removeItem("token"); // Remove invalid token
+          router.push("/login"); // Redirect to login
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+
         const data = await response.json();
         setAppointments(data);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching appointments:", error);
+        setError(error.message || "Failed to fetch appointments.");
       } finally {
         setLoading(false);
       }
     }
+
     fetchAppointments();
   }, []);
+
 
   return (
     <div className="flex min-h-screen">
