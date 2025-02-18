@@ -1,6 +1,7 @@
 "use client";
+export const dynamic = "force-dynamic";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -11,18 +12,26 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function SignupPage() {
-  const searchParams = useSearchParams();
-  const [userType, setUserType] = useState(searchParams.get("type") || "farmer");
+  const router = useRouter();
+  const { toast } = useToast();
+
+  // ✅ Move `useSearchParams()` inside `useEffect`
+  const [userType, setUserType] = useState("farmer");
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      const type = searchParams.get("type");
+      if (type) setUserType(type);
+    }
+  }, []);
+
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [licenseNumber, setLicenseNumber] = useState("");
   const [location, setLocation] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
-  const { toast } = useToast();
 
-  // ✅ Use API base URL from .env.local
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,22 +55,18 @@ export default function SignupPage() {
       });
 
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.message || "Signup failed");
       }
 
-      // Show success message
       toast({
         title: "✅ Account Created",
         description: "Please log in to access your account.",
         variant: "success",
       });
 
-      // Redirect to login page
       router.push("/login");
     } catch (error) {
-      // Handle different error cases
       let errorMessage = "An unexpected error occurred. Please try again.";
       if (error.message.includes("User already exists")) {
         errorMessage = "⚠️ User already exists. Please log in.";
@@ -69,7 +74,6 @@ export default function SignupPage() {
         errorMessage = "🚨 Server issue. Try again later.";
       }
 
-      // Show error toast notification
       toast({
         title: "Signup Failed",
         description: errorMessage,
@@ -91,7 +95,6 @@ export default function SignupPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* User Type Selection */}
             <RadioGroup defaultValue={userType} onValueChange={setUserType} className="grid grid-cols-2 gap-4">
               <div>
                 <RadioGroupItem value="farmer" id="farmer" className="peer sr-only" />
@@ -113,7 +116,6 @@ export default function SignupPage() {
               </div>
             </RadioGroup>
 
-            {/* User Details */}
             <div className="space-y-4">
               <div className="grid gap-2">
                 <Label htmlFor="name">Full Name</Label>
