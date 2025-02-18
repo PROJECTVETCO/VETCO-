@@ -22,58 +22,63 @@ export default function DashboardPage() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   useEffect(() => {
-  async function fetchData() {
-    setLoading(true);
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      console.error("No authentication token found. Redirecting to login...");
-      return;
-    }
-
-    try {
-      // Fetch total appointments
-      const statsResponse = await fetch(`${API_BASE_URL}/api/dashboard/stats`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`, // ✅ Send token for authentication
-        },
-      });
-
-      if (!statsResponse.ok) {
-        throw new Error(`Stats Fetch Error: ${statsResponse.statusText}`);
+    async function fetchData() {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+  
+      if (!token) {
+        console.error("❌ No authentication token found. Redirecting to login...");
+        return;
       }
-
-      const statsData = await statsResponse.json();
-      setTotalAppointments(statsData.totalAppointments);
-
-      // Fetch recent activity
-      const activityResponse = await fetch(`${API_BASE_URL}/api/dashboard/recent-activity`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`, // ✅ Send token for authentication
-        },
-      });
-
-      if (!activityResponse.ok) {
-        throw new Error(`Activity Fetch Error: ${activityResponse.statusText}`);
+  
+      console.log("✅ Sending token:", token); // Log the token before API calls
+  
+      try {
+        // Fetch total appointments
+        const statsResponse = await fetch(`${API_BASE_URL}/api/dashboard/stats`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`, // ✅ Ensure token is sent
+          },
+        });
+  
+        if (!statsResponse.ok) {
+          console.error(`❌ Stats Fetch Error (${statsResponse.status}):`, await statsResponse.text());
+          throw new Error(`Stats Fetch Error: ${statsResponse.statusText}`);
+        }
+  
+        const statsData = await statsResponse.json();
+        setTotalAppointments(statsData.totalAppointments);
+  
+        // Fetch recent activity
+        const activityResponse = await fetch(`${API_BASE_URL}/api/dashboard/recent-activity`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`, // ✅ Ensure token is sent
+          },
+        });
+  
+        if (!activityResponse.ok) {
+          console.error(`❌ Activity Fetch Error (${activityResponse.status}):`, await activityResponse.text());
+          throw new Error(`Activity Fetch Error: ${activityResponse.statusText}`);
+        }
+  
+        const activityData = await activityResponse.json();
+        setRecentActivity(activityData);
+  
+      } catch (error) {
+        console.error("🔥 Error fetching dashboard data:", error);
+        setError(error.message || "Failed to fetch data.");
+      } finally {
+        setLoading(false);
       }
-
-      const activityData = await activityResponse.json();
-      setRecentActivity(activityData);
-
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-      setError(error.message || "Failed to fetch data.");
-    } finally {
-      setLoading(false);
     }
-  }
-
-  fetchData();
-}, [refreshAppointments]);
+  
+    fetchData();
+  }, [refreshAppointments]);
+  
 
 
   return (
