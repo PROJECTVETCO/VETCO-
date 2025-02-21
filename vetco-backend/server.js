@@ -4,7 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
-
+app.use(express.json());
 // ✅ Configure CORS
 // ✅ Configure CORS properly
 app.use(
@@ -15,7 +15,15 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"], // ✅ Allow token authentication
   })
 );
-app.use(express.json());
+// ✅ Ensure CORS headers are set for all responses
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
+});
+
 
 // ✅ Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
