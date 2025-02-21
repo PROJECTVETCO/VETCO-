@@ -37,15 +37,28 @@ router.get("/appointments", async (req, res) => {
   }
 });
 
-// ✅ GET /api/dashboard/stats - Fetch total appointments
-router.get("/stats", async (req, res) => {
+// // ✅ GET /api/dashboard/stats - Fetch total appointments
+// router.get("/stats", async (req, res) => {
+//   try {
+//     const totalAppointments = await Appointment.countDocuments();
+//     res.status(200).json({
+//       totalAppointments,
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error. Try again later." });
+//   }
+// });
+
+// ✅ GET /api/dashboard/stats - Fetch total appointments for the logged-in user
+router.get("/stats", protect, async (req, res) => {
   try {
-    const totalAppointments = await Appointment.countDocuments();
+    const totalAppointments = await Appointment.countDocuments({ userId: req.user._id });
+
     res.status(200).json({
       totalAppointments,
     });
   } catch (error) {
-    res.status(500).json({ message: "Server error. Try again later." });
+    res.status(500).json({ message: "Server error. Try again later.", error: error.message });
   }
 });
 
