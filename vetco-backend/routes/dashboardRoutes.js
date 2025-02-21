@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Appointment = require("../models/Appointment");
+const { protect } = require("../middleware/authMiddleware");
 
 // ✅ POST /api/dashboard/appointments → Create a new appointment
 router.post("/appointments", async (req, res) => {
@@ -48,10 +49,38 @@ router.get("/stats", async (req, res) => {
   }
 });
 
+
 // ✅ GET /api/dashboard/recent-activity - Fetch recent appointments as activity
-router.get("/recent-activity", async (req, res) => {
+// router.get("/recent-activity", async (req, res) => {
+//   try {
+//     const recentAppointments = await Appointment.find().sort({ createdAt: -1 }).limit(5);
+//     const activity = recentAppointments.map((appt) => ({
+//       id: appt._id,
+//       type: "appointment",
+//       status: "New appointment scheduled",
+//       description: `${appt.clientName} - ${new Date(appt.date).toLocaleDateString()} at ${appt.time}`,
+//       color: "green",
+//     }));
+
+//     res.status(200).json(activity);
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error. Try again later." });
+//   }
+// });
+
+// ✅ GET /api/dashboard/recent-activity → Fetch recent appointments for the logged-in user
+router.get("/recent-activity", protect, async (req, res) => {
   try {
-    const recentAppointments = await Appointment.find().sort({ createdAt: -1 }).limit(5);
+    const userId = req.user._id; // ✅ Get logged-in user ID
+
+    const recentAppointments = await Appointment.find({ userId }) // ✅ Only show user's appointments
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    if (!recentAppointments.length) {
+      return res.status(404).json({ message: "No recent activity found." });
+    }
+
     const activity = recentAppointments.map((appt) => ({
       id: appt._id,
       type: "appointment",
@@ -62,10 +91,10 @@ router.get("/recent-activity", async (req, res) => {
 
     res.status(200).json(activity);
   } catch (error) {
+    console.error("❌ Error fetching recent activity:", error.message);
     res.status(500).json({ message: "Server error. Try again later." });
   }
 });
-
 
 
 module.exports = router;
