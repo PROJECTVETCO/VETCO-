@@ -9,6 +9,7 @@ import Link from "next/link"
 export default function DashboardPage() {
   const [refreshAppointments, setRefreshAppointments] = useState(false);
   const [totalAppointments, setTotalAppointments] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   interface Activity {
     id: string;
     color: string;
@@ -216,7 +217,4 @@ export default function DashboardPage() {
   )
 }
 
-function setError(arg0: any) {
-  throw new Error("Function not implemented.");
-}
 

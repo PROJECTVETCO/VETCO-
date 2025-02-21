@@ -6,13 +6,15 @@ require("dotenv").config();
 const app = express();
 
 // ✅ Configure CORS
-app.use(cors({
-  origin: "*", // Allow all origins (for development)
-  methods: "GET,POST,PUT,DELETE",
-  credentials: true,
-  allowedHeaders: ["Content-Type,Authorization"],
-}));
-
+// ✅ Configure CORS properly
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "https://vetco-n9qd.vercel.app"], // ✅ Add your frontend domains
+    credentials: true, // ✅ Allows cookies & authorization headers
+    methods: ["GET", "POST", "PUT", "DELETE"], // ✅ Specify allowed methods
+    allowedHeaders: ["Content-Type", "Authorization"], // ✅ Allow token authentication
+  })
+);
 app.use(express.json());
 
 // ✅ Connect to MongoDB
