@@ -24,16 +24,19 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
-      const token = localStorage.getItem("token");
-  
-      if (!token) {
-        console.error("❌ No authentication token found. Redirecting to login...");
-        return;
-      }
-  
-      console.log("✅ Sending token:", token); // Log the token before API calls
+      setError(null);
   
       try {
+        const token = localStorage.getItem("token");
+  
+        if (!token) {
+          console.error("❌ No authentication token found. Redirecting to login...");
+          setError("Unauthorized. Please log in.");
+          return;
+        }
+  
+        console.log("🔍 Sending token:", token); // Debugging: Log token before sending
+  
         // Fetch total appointments
         const statsResponse = await fetch(`${API_BASE_URL}/api/dashboard/stats`, {
           method: "GET",
@@ -41,6 +44,7 @@ export default function DashboardPage() {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`, // ✅ Ensure token is sent
           },
+          credentials: "include", // ✅ Helps with authentication headers
         });
   
         if (!statsResponse.ok) {
@@ -50,6 +54,7 @@ export default function DashboardPage() {
   
         const statsData = await statsResponse.json();
         setTotalAppointments(statsData.totalAppointments);
+        console.log("✅ Stats Data Received:", statsData); // Debugging: Log API response
   
         // Fetch recent activity
         const activityResponse = await fetch(`${API_BASE_URL}/api/dashboard/recent-activity`, {
@@ -58,6 +63,7 @@ export default function DashboardPage() {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`, // ✅ Ensure token is sent
           },
+          credentials: "include", // ✅ Helps prevent issues with cross-origin requests
         });
   
         if (!activityResponse.ok) {
@@ -67,14 +73,11 @@ export default function DashboardPage() {
   
         const activityData = await activityResponse.json();
         setRecentActivity(activityData);
+        console.log("✅ Activity Data Received:", activityData); // Debugging: Log API response
   
       } catch (error) {
         console.error("🔥 Error fetching dashboard data:", error);
-        if (error instanceof Error) {
-          setError(error.message || "Failed to fetch data.");
-        } else {
-          setError("Failed to fetch data.");
-        }
+        setError(error.message || "Failed to fetch data.");
       } finally {
         setLoading(false);
       }
