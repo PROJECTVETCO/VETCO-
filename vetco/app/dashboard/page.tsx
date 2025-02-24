@@ -25,41 +25,59 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
-      const token = localStorage.getItem("token");
-  
-      if (!token) {
-        console.error("🚨 No authentication token found in localStorage.");
-        return;
-      }
-  
-      console.log("🔑 Token retrieved:", token);
+      setError(null);
   
       try {
-        const response = await fetch(`${API_BASE_URL}/api/dashboard/recent-activity`, {
+        const token = localStorage.getItem("token");
+  
+        if (!token) {
+          console.error("❌ No authentication token found. Redirecting to login...");
+          setError("Unauthorized. Please log in.");
+          return;
+        }
+  
+        console.log("🔍 Sending token:", token); // Debugging: Log token before sending
+  
+        // Fetch total appointments
+        const statsResponse = await fetch(`${API_BASE_URL}/api/dashboard/stats`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
+            "Authorization": `Bearer ${token}`, // ✅ Ensure token is sent
           },
+          credentials: "include", // ✅ Helps with authentication headers
         });
   
-        console.log("📡 Request Headers Sent:", {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        });
-  
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`❌ API Error (${response.status}):`, errorText);
-          throw new Error(`API Error ${response.status}: ${errorText}`);
+        if (!statsResponse.ok) {
+          console.error(`❌ Stats Fetch Error (${statsResponse.status}):`, await statsResponse.text());
+          throw new Error(`Stats Fetch Error: ${statsResponse.statusText}`);
         }
   
-        const data = await response.json();
-        console.log("✅ API Response:", data);
+        const statsData = await statsResponse.json();
+        setTotalAppointments(statsData.totalAppointments);
+        console.log("✅ Stats Data Received:", statsData); // Debugging: Log API response
   
-        setRecentActivity(data);
+        // Fetch recent activity
+        const activityResponse = await fetch(`${API_BASE_URL}/api/dashboard/recent-activity`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`, // ✅ Ensure token is sent
+          },
+          credentials: "include", // ✅ Helps prevent issues with cross-origin requests
+        });
+  
+        if (!activityResponse.ok) {
+          console.error(`❌ Activity Fetch Error (${activityResponse.status}):`, await activityResponse.text());
+          throw new Error(`Activity Fetch Error: ${activityResponse.statusText}`);
+        }
+  
+        const activityData = await activityResponse.json();
+        setRecentActivity(activityData);
+        console.log("✅ Activity Data Received:", activityData); // Debugging: Log API response
+  
       } catch (error) {
-        console.error("🔥 Error fetching data:", error);
+        console.error("🔥 Error fetching dashboard data:", error);
         setError(error.message || "Failed to fetch data.");
       } finally {
         setLoading(false);
@@ -67,7 +85,7 @@ export default function DashboardPage() {
     }
   
     fetchData();
-  }, []);
+  }, [refreshAppointments]);
   
 
 
