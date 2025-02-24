@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -37,18 +38,24 @@ export default function LoginPage() {
         throw new Error(data.message || "Login failed");
       }
 
-      // Save token to localStorage
+      // ✅ Save token & user details to localStorage
       localStorage.setItem("token", data.token);
+      localStorage.setItem("userType", data.user.userType); // Save user role
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // Show success message
+      // ✅ Show success message
       toast({
         title: "Logged in successfully",
         description: `Welcome back, ${data.user.fullName}!`,
       });
 
-      // Redirect to dashboard
-      router.push("/dashboard");
+      // ✅ Redirect based on userType (role-based navigation)
+      if (data.user.userType === "vet") {
+        router.push("/dashboard/vet"); // Redirect vets to vet dashboard
+      } else {
+        router.push("/dashboard"); // Redirect farmers to farmer dashboard
+      }
+      
     } catch (error) {
       toast({
         title: "Login failed",
