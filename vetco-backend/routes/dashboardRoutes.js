@@ -51,6 +51,64 @@ router.get("/appointments", protect, async (req, res) => {
   }
 });
 
+// ✅ GET appointments by user ID (Protected)
+// router.get("/appointments/user/:userId", protect, async (req, res) => {
+//   try {
+//     const { userId } = req.params;
+//     if (!userId) {
+//       return res.status(400).json({ message: "User ID is required" });
+//     }
+
+//     const userAppointments = await Appointment.find({ userId }).sort({ date: 1 }).populate("vetId", "fullName email");
+
+//     if (!userAppointments.length) {
+//       return res.status(404).json({ message: "No appointments found for this user." });
+//     }
+
+//     res.status(200).json(userAppointments);
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error. Please try again later.", error: error.message });
+//   }
+// });
+
+// ✅ GET /api/dashboard/appointments/user → Fetch logged-in user's appointments
+router.get("/appointments/user", protect, async (req, res) => {
+  try {
+    // ✅ Ensure `req.user` is available (middleware must attach it)
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: "Unauthorized. Please log in." });
+    }
+
+    const userId = req.user._id; // ✅ Get userId from decoded token
+    console.log("🔑 Fetching appointments for User ID:", userId);
+
+    // ✅ Fetch only appointments belonging to the logged-in user
+    const userAppointments = await Appointment.find({ userId })
+      .sort({ date: 1 })
+      .populate("vetId", "fullName email");
+
+    if (!userAppointments.length) {
+      return res.status(404).json({ message: "No appointments found for this user." });
+    }
+
+    res.status(200).json(userAppointments);
+  } catch (error) {
+    console.error("🔥 Error fetching appointments:", error);
+    res.status(500).json({ message: "Server error. Please try again later.", error: error.message });
+  }
+});
+
+
+
+// ✅ DELETE an appointment
+router.delete("/appointments/:appointmentId", protect, async (req, res) => {
+  try {
+    await Appointment.findByIdAndDelete(req.params.appointmentId);
+    res.json({ message: "Appointment deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error. Please try again later.", error: error.message });
+  }
+});
 
 
 
