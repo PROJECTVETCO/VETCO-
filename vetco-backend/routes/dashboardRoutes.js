@@ -28,14 +28,31 @@ router.post("/appointments", async (req, res) => {
 });
 
 // ✅ GET /api/dashboard/appointments → Fetch all appointments
-router.get("/appointments", async (req, res) => {
+// router.get("/appointments", async (req, res) => {
+//   try {
+//     const appointments = await Appointment.find().sort({ date: 1 });
+//     res.status(200).json(appointments);
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error. Please try again later." });
+//   }
+// });
+
+
+
+// ✅ GET /api/dashboard/appointments → Fetch logged-in user's appointments
+router.get("/appointments", protect, async (req, res) => {
   try {
-    const appointments = await Appointment.find().sort({ date: 1 });
+    // Fetch only the logged-in user's appointments
+    const appointments = await Appointment.find({ user: req.user._id }).sort({ date: 1 });
+
     res.status(200).json(appointments);
   } catch (error) {
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
+
+
+
 
 // // ✅ GET /api/dashboard/stats - Fetch total appointments
 // router.get("/stats", async (req, res) => {
