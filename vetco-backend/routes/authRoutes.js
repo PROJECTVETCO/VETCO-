@@ -22,7 +22,7 @@ router.post("/signup", async (req, res) => {
       fullName,
       email,
       password: hashedPassword,
-      userType,
+      userType, // Store userType: "farmer" or "vet"
       licenseNumber: userType === "vet" ? licenseNumber : undefined,
       location,
     });
@@ -35,7 +35,7 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// LOGIN Route
+// LOGIN Route (Redirect Based on Role)
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -48,10 +48,19 @@ router.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-    // Generate Token
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    // Generate JWT Token (Include userType)
+    const token = jwt.sign(
+      { userId: user._id, userType: user.userType }, // ✅ Include userType
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
-    res.status(200).json({ token, user });
+    // Send token and userType in response
+    res.status(200).json({
+      token,
+      userType: user.userType, // ✅ Send userType for frontend navigation
+      user,
+    });
 
   } catch (error) {
     res.status(500).json({ error: error.message });
