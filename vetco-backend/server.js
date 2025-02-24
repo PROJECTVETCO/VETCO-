@@ -9,7 +9,7 @@ app.use(express.json());
 // ✅ Configure CORS properly
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://vetco-n9qd.vercel.app", "https://vetco.onrender.com"], // ✅ Add your frontend domains
+    origin: ["http://localhost:3000", "https://vetco-n9qd.vercel.app", "https://vetco.onrender.com/**"], // ✅ Add your frontend domains
     credentials: true, // ✅ Allows cookies & authorization headers
     methods: ["GET", "POST", "PUT", "DELETE"], // ✅ Specify allowed methods
     allowedHeaders: ["Content-Type", "Authorization"], // ✅ Allow token authentication
