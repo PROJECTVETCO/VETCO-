@@ -46,7 +46,7 @@ export default function NetworkPage() {
       }
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/dashboard/appointments/user/${userId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/dashboard/appointments/user`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
