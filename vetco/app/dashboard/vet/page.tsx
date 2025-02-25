@@ -3,9 +3,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, MessageSquare, Users, Activity } from "lucide-react";
+import { Calendar, MessageSquare, Users, Activity, ClipboardCheck, Search } from "lucide-react";
 import NewAppointmentModal from "@/components/NewAppointmentModal";
 import Link from "next/link";
+
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -14,7 +15,13 @@ export default function DashboardPage() {
   const [activeChats, setActiveChats] = useState(0);
   const [networkSize, setNetworkSize] = useState(0);
   const [responseRate, setResponseRate] = useState(0);
-  const [recentActivity, setRecentActivity] = useState([]);
+  interface Activity {
+    id: string;
+    status: string;
+    description: string;
+  }
+
+  const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -77,7 +84,11 @@ export default function DashboardPage() {
         setRecentActivity(activityData);
       } catch (error) {
         console.error("🔥 Error fetching dashboard data:", error);
-        setError(error.message || "Failed to fetch data.");
+        if (error instanceof Error) {
+          setError(error.message || "Failed to fetch data.");
+        } else {
+          setError("Failed to fetch data.");
+        }
       } finally {
         setLoading(false);
       }
@@ -97,25 +108,43 @@ export default function DashboardPage() {
           </Link>
         </div>
         <nav className="space-y-1 p-4">
-          <Link href="/dashboard" className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+          <Link
+            href="/dashboard/vet"
+            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+          >
             <Activity className="h-4 w-4" />
             Dashboard
           </Link>
-          <Link href="/dashboard/appointments" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent">
+          <Link
+            href="/dashboard/vet/appointments"
+            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"           
+          >
             <Calendar className="h-4 w-4" />
             Appointments
           </Link>
-          <Link href="/dashboard/messages" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent">
+          <Link
+            href="/dashboard/vet/messages"
+            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
+          >
             <MessageSquare className="h-4 w-4" />
             Messages
           </Link>
-          <Link href="/dashboard/network" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent">
+          <Link
+            href="/dashboard/vet/patients"
+            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
+          >
             <Users className="h-4 w-4" />
-            My Records
+            Patients
+          </Link>
+          <Link
+            href="/dashboard/vet/records"
+            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
+          >
+            <ClipboardCheck className="h-4 w-4" />
+            Medical Records
           </Link>
         </nav>
       </aside>
-
       {/* Main Content */}
       <main className="flex-1">
         <div className="border-b">
