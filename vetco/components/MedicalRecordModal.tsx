@@ -29,14 +29,20 @@ export default function MedicalRecordModal({ isOpen, onClose, onRecordAdded }: {
     async function fetchPatients() {
       try {
         const response = await fetch(`${API_BASE_URL}/api/vet/patients`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch patients");
+        }
         const data = await response.json();
-        setPatients(data);
+        setPatients(Array.isArray(data) ? data : []); // ✅ Ensure data is an array
       } catch (error) {
         console.error("Error fetching patients:", error);
+        setPatients([]); // ✅ Fallback to empty array
       }
     }
+  
     fetchPatients();
   }, []);
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
