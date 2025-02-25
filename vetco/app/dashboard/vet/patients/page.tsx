@@ -4,85 +4,70 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Users, Activity, Calendar, Search } from "lucide-react";
+import { Calendar, MessageSquare, Users, Activity, ClipboardCheck, Stethoscope, ClipboardList, Search } from "lucide-react";
 import Link from "next/link";
 
-export default function NetworkPage() {
-  interface Appointment {
+export default function PatientsPage() {
+  interface Patient {
     _id: string;
-    title: string;
-    date: string;
-    time: string;
-    clientName: string;
+    name: string;
+    species: string;
+    breed: string;
+    owner: string;
+    lastVisit: string;
   }
 
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [patients, setPatients] = useState<Patient[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   useEffect(() => {
-    const fetchAppointments = async () => {
+    const fetchPatients = async () => {
       setLoading(true);
       setError(null);
 
       const storedUser = localStorage.getItem("user");
-      const storedToken = localStorage.getItem("token"); // Get token from localStorage
+      const storedToken = localStorage.getItem("token");
 
       const user = storedUser ? JSON.parse(storedUser) : null;
       const userId = user?._id;
 
-      if (!userId) {
-        setError("User not found. Please log in.");
-        setLoading(false);
-        return;
-      }
-
-      if (!storedToken) {
+      if (!userId || !storedToken) {
         setError("Unauthorized. Please log in again.");
         setLoading(false);
         return;
       }
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/dashboard/appointments/user/${userId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/vet/patients`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${storedToken}`, // Add token to request
+            Authorization: `Bearer ${storedToken}`,
           },
         });
 
         if (!response.ok) {
-          if (response.status === 401) throw new Error("Unauthorized. Please log in again.");
           throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
 
         const data = await response.json();
-
-        if (!Array.isArray(data)) {
-          throw new Error("Invalid data format. Expected an array.");
-        }
-
-        setAppointments(data);
+        setPatients(Array.isArray(data) ? data : []);
       } catch (error: any) {
-        console.error("Error fetching appointments:", error);
-        setError(error.message || "Failed to fetch appointments.");
+        setError(error.message || "Failed to fetch patients.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAppointments();
+    fetchPatients();
   }, []);
 
-  // Ensure `appointments` is always an array before filtering
-  const filteredAppointments = Array.isArray(appointments)
-    ? appointments.filter((appointment) =>
-        appointment.title.toLowerCase().includes(search.toLowerCase())
-      )
-    : [];
+  const filteredPatients = patients.filter((patient) =>
+    patient.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="flex min-h-screen">
@@ -96,32 +81,39 @@ export default function NetworkPage() {
         </div>
         <nav className="space-y-1 p-4">
           <Link
-            href="/dashboard"
+            href="/dashboard/vet"
             className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
           >
             <Activity className="h-4 w-4" />
             Dashboard
           </Link>
           <Link
-            href="/dashboard/appointments"
+            href="/dashboard/vet/appointments"
             className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
           >
             <Calendar className="h-4 w-4" />
             Appointments
           </Link>
           <Link
-            href="/dashboard/messages"
+            href="/dashboard/vet/messages"
             className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
           >
-            <Users className="h-4 w-4" />
+            <MessageSquare className="h-4 w-4" />
             Messages
           </Link>
           <Link
-            href="/dashboard/network"
+            href="/dashboard/vet/patients"
             className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
           >
             <Users className="h-4 w-4" />
-            My Records
+            Patients
+          </Link>
+          <Link
+            href="/dashboard/vet/records"
+            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
+          >
+            <ClipboardCheck className="h-4 w-4" />
+            Medical Records
           </Link>
         </nav>
       </aside>
@@ -130,8 +122,8 @@ export default function NetworkPage() {
       <main className="flex-1">
         <div className="border-b">
           <div className="flex h-14 items-center justify-between px-4">
-            <h1 className="text-lg font-semibold">My Appointments & Records</h1>
-            <Button>Add Record</Button>
+            <h1 className="text-lg font-semibold">My Patients</h1>
+            <Button>Add New Patient</Button>
           </div>
         </div>
 
@@ -141,7 +133,7 @@ export default function NetworkPage() {
             <Search className="h-5 w-5 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search appointments..."
+              placeholder="Search patients..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full max-w-lg"
@@ -151,26 +143,27 @@ export default function NetworkPage() {
           {/* Error Message */}
           {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
 
-          {/* Appointment Listings */}
+          {/* Patient Listings */}
           <div className="grid gap-4 mt-6 md:grid-cols-2 lg:grid-cols-3">
             {loading ? (
-              <p className="text-center text-sm text-muted-foreground">Loading records...</p>
-            ) : filteredAppointments.length > 0 ? (
-              filteredAppointments.map((appointment) => (
-                <Card key={appointment._id}>
+              <p className="text-center text-sm text-muted-foreground">Loading patients...</p>
+            ) : filteredPatients.length > 0 ? (
+              filteredPatients.map((patient) => (
+                <Card key={patient._id}>
                   <CardHeader>
-                    <CardTitle>{appointment.title}</CardTitle>
+                    <CardTitle>{patient.name} ({patient.species})</CardTitle>
                     <CardDescription>
-                      {appointment.clientName} | {appointment.date} at {appointment.time}
+                      Breed: {patient.breed} | Owner: {patient.owner}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
+                    <p className="text-sm text-muted-foreground">Last Visit: {patient.lastVisit}</p>
                     <Button variant="outline">View Details</Button>
                   </CardContent>
                 </Card>
               ))
             ) : (
-              <p className="text-center text-sm text-muted-foreground">No records found.</p>
+              <p className="text-center text-sm text-muted-foreground">No patients found.</p>
             )}
           </div>
         </div>
