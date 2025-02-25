@@ -18,20 +18,46 @@ export default function NewMessageModal({ onMessageSent }: { onMessageSent: () =
   const [recipient, setRecipient] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   useEffect(() => {
     async function fetchUsers() {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setError("Unauthorized. Please log in.");
+        return;
+      }
+
       try {
-        const response = await fetch(`${API_BASE_URL}/api/users`);
+        const response = await fetch(`${API_BASE_URL}/api/users`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // ✅ Ensure token is sent
+          },
+        });
+
         const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || `Error ${response.status}: ${response.statusText}`);
+        }
+
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid API response: Expected an array of users.");
+        }
+
         setUsers(data);
-      } catch (error) {
-        console.error("Error fetching users:", error);
+      } catch (err: any) {
+        console.error("Error fetching users:", err);
+        setError(err.message || "Failed to fetch users.");
       }
     }
+
     fetchUsers();
   }, []);
 
@@ -40,12 +66,12 @@ export default function NewMessageModal({ onMessageSent }: { onMessageSent: () =
     setLoading(true);
 
     try {
-      // ✅ Get logged-in user's ID from localStorage
       const storedUser = localStorage.getItem("user");
       const user = storedUser ? JSON.parse(storedUser) : null;
-      const sender = user?._id; 
+      const sender = user?._id;
+      const token = localStorage.getItem("token");
 
-      if (!sender) {
+      if (!sender || !token) {
         throw new Error("User is not authenticated. Please log in again.");
       }
 
@@ -61,6 +87,7 @@ export default function NewMessageModal({ onMessageSent }: { onMessageSent: () =
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // ✅ Include Authorization header
         },
         body: JSON.stringify({ sender, recipient, content: message }),
       });
@@ -74,20 +101,18 @@ export default function NewMessageModal({ onMessageSent }: { onMessageSent: () =
       toast({
         title: "✅ Message Sent",
         description: `Your message was sent successfully.`,
-        variant: "success",
+        // variant: "success",
       });
 
-      // Reset form
       setRecipient("");
       setMessage("");
 
-      // Notify parent to refresh messages
       onMessageSent();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "❌ Error",
         description: error.message,
-        variant: "destructive",
+        // variant: "destructive",
       });
       console.error("Error sending message:", error);
     } finally {
@@ -104,6 +129,9 @@ export default function NewMessageModal({ onMessageSent }: { onMessageSent: () =
         <DialogHeader>
           <DialogTitle>Send a New Message</DialogTitle>
         </DialogHeader>
+
+        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="recipient">Recipient</Label>
@@ -115,13 +143,18 @@ export default function NewMessageModal({ onMessageSent }: { onMessageSent: () =
               className="w-full border px-2 py-2 rounded bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select a user</option>
-              {users.map((user) => (
-                <option key={user._id} value={user._id}>
-                  {user.fullName} ({user.email})
-                </option>
-              ))}
+              {users.length > 0 ? (
+                users.map((user) => (
+                  <option key={user._id} value={user._id}>
+                    {user.fullName} ({user.email})
+                  </option>
+                ))
+              ) : (
+                <option disabled>Loading users...</option>
+              )}
             </select>
           </div>
+
           <div>
             <Label htmlFor="message">Message</Label>
             <Input 
@@ -132,6 +165,7 @@ export default function NewMessageModal({ onMessageSent }: { onMessageSent: () =
               required 
             />
           </div>
+
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Sending..." : "Send Message"}
           </Button>
