@@ -43,7 +43,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api", messageRoutes); // Register message routes
 app.use("/api/records", recordRoutes);
-app.use(".api/vet", vetRoutes)
+app.use("/api/vet", vetRoutes)
 
 // ✅ Start Server
 const PORT = process.env.PORT || 5000;

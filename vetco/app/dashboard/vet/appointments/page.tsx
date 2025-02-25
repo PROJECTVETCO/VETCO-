@@ -1,9 +1,88 @@
-import Link from "next/link";
+"use client";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, MessageSquare, Users, Activity, ClipboardCheck, Stethoscope, ClipboardList } from "lucide-react";
+import { Calendar, MessageSquare, Users, Activity, ClipboardCheck } from "lucide-react";
+import NewAppointmentModal from "@/components/NewAppointmentModal";
+import Link from "next/link";
 
 export default function VetAppointmentsDashboard() {
+  const router = useRouter();
+  const [appointments, setAppointments] = useState([]);
+  const [totalAppointments, setTotalAppointments] = useState(0);
+  const [upcomingAppointments, setUpcomingAppointments] = useState(0);
+  const [cancelledAppointments, setCancelledAppointments] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          console.error("❌ No authentication token found. Redirecting to login...");
+          setError("Unauthorized. Please log in.");
+          router.push("/login");
+          return;
+        }
+
+        // Fetch Appointments Stats
+        const statsResponse = await fetch(`${API_BASE_URL}/api/dashboard/stats`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        });
+
+        if (statsResponse.status === 401) {
+          console.error("❌ Unauthorized: Token expired. Redirecting to login...");
+          setError("Session expired. Please log in again.");
+          localStorage.removeItem("token");
+          router.push("/login");
+          return;
+        }
+
+        const statsData = await statsResponse.json();
+        setTotalAppointments(statsData.totalAppointments || 0);
+        setUpcomingAppointments(statsData.upcomingAppointments || 0);
+        setCancelledAppointments(statsData.cancelledAppointments || 0);
+
+        // Fetch Appointments
+        const appointmentsResponse = await fetch(`${API_BASE_URL}/api/vet/appointments`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        });
+
+        if (!appointmentsResponse.ok) {
+          throw new Error(`Appointments Fetch Error: ${appointmentsResponse.statusText}`);
+        }
+
+        const appointmentsData = await appointmentsResponse.json();
+        setAppointments(appointmentsData);
+      } catch (error) {
+        console.error("🔥 Error fetching vet appointments:", error);
+        setError(error.message || "Failed to fetch data.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
@@ -15,38 +94,23 @@ export default function VetAppointmentsDashboard() {
           </Link>
         </div>
         <nav className="space-y-1 p-4">
-          <Link
-            href="/dashboard/vet"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
-          >
+          <Link href="/dashboard/vet" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent">
             <Activity className="h-4 w-4" />
             Dashboard
           </Link>
-          <Link
-            href="/dashboard/vet/appointments"
-            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-          >
+          <Link href="/dashboard/vet/appointments" className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
             <Calendar className="h-4 w-4" />
             Appointments
           </Link>
-          <Link
-            href="/dashboard/vet/messages"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
-          >
+          <Link href="/dashboard/vet/messages" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent">
             <MessageSquare className="h-4 w-4" />
             Messages
           </Link>
-          <Link
-            href="/dashboard/vet/patients"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
-          >
+          <Link href="/dashboard/vet/patients" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent">
             <Users className="h-4 w-4" />
             Patients
           </Link>
-          <Link
-            href="/dashboard/vet/records"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
-          >
+          <Link href="/dashboard/vet/records" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent">
             <ClipboardCheck className="h-4 w-4" />
             Medical Records
           </Link>
@@ -58,7 +122,9 @@ export default function VetAppointmentsDashboard() {
         <div className="border-b">
           <div className="flex h-14 items-center justify-between px-4">
             <h1 className="text-lg font-semibold">Vet Appointments</h1>
-            <Button>Schedule New Appointment</Button>
+            <NewAppointmentModal onAppointmentCreated={function (): void {
+              throw new Error("Function not implemented.");
+            } } />
           </div>
         </div>
 
@@ -71,8 +137,7 @@ export default function VetAppointmentsDashboard() {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">32</div>
-                <p className="text-xs text-muted-foreground">Total scheduled</p>
+                <div className="text-2xl font-bold">{loading ? "Loading..." : totalAppointments}</div>
               </CardContent>
             </Card>
             <Card>
@@ -81,8 +146,7 @@ export default function VetAppointmentsDashboard() {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">8</div>
-                <p className="text-xs text-muted-foreground">Scheduled this week</p>
+                <div className="text-2xl font-bold">{loading ? "Loading..." : upcomingAppointments}</div>
               </CardContent>
             </Card>
             <Card>
@@ -91,35 +155,39 @@ export default function VetAppointmentsDashboard() {
                 <Activity className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">2</div>
-                <p className="text-xs text-muted-foreground">Last 30 days</p>
+                <div className="text-2xl font-bold">{loading ? "Loading..." : cancelledAppointments}</div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Recent Appointments */}
+          {/* Upcoming Appointments */}
           <Card className="mt-6">
             <CardHeader>
               <CardTitle>Upcoming Appointments</CardTitle>
               <CardDescription>Next scheduled appointments</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="h-8 w-8 rounded-full bg-green-100"></div>
-                  <div>
-                    <p className="text-sm font-medium">Consultation with Farmer John</p>
-                    <p className="text-sm text-muted-foreground">Today at 3:00 PM</p>
-                  </div>
+              {loading ? (
+                <p>Loading appointments...</p>
+              ) : error ? (
+                <p className="text-red-500">{error}</p>
+              ) : appointments.length === 0 ? (
+                <p className="text-muted-foreground">No upcoming appointments.</p>
+              ) : (
+                <div className="space-y-4">
+                  {appointments.map((appointment) => (
+                    <div key={appointment._id} className="flex items-center gap-4">
+                      <div className="h-8 w-8 rounded-full bg-green-100"></div>
+                      <div>
+                        <p className="text-sm font-medium">{appointment.title}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(appointment.date).toLocaleDateString()} at {appointment.time}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="h-8 w-8 rounded-full bg-blue-100"></div>
-                  <div>
-                    <p className="text-sm font-medium">Follow-up with Farmer Sarah</p>
-                    <p className="text-sm text-muted-foreground">Tomorrow at 10:00 AM</p>
-                  </div>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </div>

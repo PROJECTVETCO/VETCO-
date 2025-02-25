@@ -95,15 +95,16 @@ router.post("/records", protect, async (req, res) => {
 //   }
 // });
 /** 
- * @desc Fetch all appointments
+/** 
+ * @desc Fetch appointments assigned to a vet
  * @route GET /api/vet/appointments
- * @access Private (Authenticated Users)
+ * @access Private (Vet)
  */
 router.get("/appointments", protect, async (req, res) => {
     try {
-      const appointments = await Appointment.find()
-        .populate("vet", "name") // Fetch vet details
-        .populate("client", "name"); // Fetch client details
+      const appointments = await Appointment.find({ vetId: req.user._id })
+        .populate("userId", "name") // Populating client details
+        .populate("vetId", "name"); // ✅ Correct field name in schema
   
       res.status(200).json(appointments);
     } catch (error) {
@@ -111,7 +112,7 @@ router.get("/appointments", protect, async (req, res) => {
       res.status(500).json({ message: "Error fetching appointments" });
     }
   });
-
+  
 // @desc Fetch recent activities for the vet
 // @route GET /api/dashboard/recent-activity
 // @access Private (Vet)
