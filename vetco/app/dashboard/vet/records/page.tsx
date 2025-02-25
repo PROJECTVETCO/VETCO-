@@ -1,10 +1,11 @@
-"use client"
+"use client";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Calendar, MessageSquare, Users, Activity, ClipboardCheck, Stethoscope, ClipboardList, Search } from "lucide-react";
+import { Calendar, MessageSquare, Users, Activity, ClipboardCheck, Search } from "lucide-react";
 import Link from "next/link";
+import MedicalRecordModal from "@/components/MedicalRecordModal";
 
 export default function PatientsPage() {
   interface Patient {
@@ -23,6 +24,7 @@ export default function PatientsPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   useEffect(() => {
@@ -105,7 +107,8 @@ export default function PatientsPage() {
         <div className="border-b">
           <div className="flex h-14 items-center justify-between px-4">
             <h1 className="text-lg font-semibold">Patient Medical Records</h1>
-            <Button>Add Medical Record</Button>
+            <Button onClick={() => setShowModal(true)}>Add Medical Record</Button>
+
           </div>
         </div>
 
@@ -152,6 +155,10 @@ export default function PatientsPage() {
             )}
           </div>
         </div>
+
+        {/* New Medical Record Modal */}
+          {/* Modal Appears Here */}
+      <MedicalRecordModal isOpen={showModal} onClose={() => setShowModal(false)} onRecordAdded={() => console.log("Record Added")} />
       </main>
     </div>
   );
