@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; // ✅ Use correct navigation hook
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, MessageSquare, Users, Activity } from "lucide-react";
 import Link from "next/link";
+import NewAppointmentModal from "@/components/NewAppointmentModal"; // ✅ Import the Modal
 
 export default function AppointmentsPage() {
   interface Appointment {
@@ -19,6 +20,7 @@ export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false); // ✅ Manage modal state
   const router = useRouter();
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -28,33 +30,33 @@ export default function AppointmentsPage() {
       setLoading(true);
       setError(null);
 
-      if (typeof window === "undefined") return; // ✅ Prevent issues during build
+      if (typeof window === "undefined") return;
 
       const storedUser = localStorage.getItem("user");
       const token = localStorage.getItem("token");
 
       if (!storedUser || !token) {
         setError("Unauthorized. Please log in.");
-        router.push("/login"); // ✅ Redirect to login page
+        router.push("/login");
         return;
       }
 
       const user = JSON.parse(storedUser);
-      const userId = user._id; // ✅ Get userId
+      const userId = user._id;
 
       try {
         const response = await fetch(`${API_BASE_URL}/api/dashboard/appointments/user`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // ✅ Send token
+            Authorization: `Bearer ${token}`,
           },
         });
 
         if (response.status === 401) {
           setError("Unauthorized. Please log in again.");
           localStorage.removeItem("token");
-          router.push("/login"); // Redirect to login
+          router.push("/login");
           return;
         }
 
@@ -110,7 +112,7 @@ export default function AppointmentsPage() {
         <div className="border-b">
           <div className="flex h-14 items-center justify-between px-4">
             <h1 className="text-lg font-semibold">Appointments</h1>
-            <Button>New Appointment</Button>
+            <Button onClick={() => setShowModal(true)}>New Appointment</Button> {/* ✅ Open Modal */}
           </div>
         </div>
 
@@ -183,6 +185,9 @@ export default function AppointmentsPage() {
           </Card>
         </div>
       </main>
+
+      {/* New Appointment Modal */}
+      {showModal && <NewAppointmentModal isOpen={showModal} onClose={() => setShowModal(false)} onAppointmentCreated={() => setShowModal(false)} />}
     </div>
   );
 }

@@ -4,28 +4,32 @@ const Appointment = require("../models/Appointment");
 const { protect } = require("../middleware/authMiddleware");
 
 // ✅ POST /api/dashboard/appointments → Create a new appointment
-router.post("/appointments", async (req, res) => {
+// ✅ POST: Create a new appointment
+router.post("/appointments", protect, async (req, res) => {
   try {
-    const { title, date, time, clientName } = req.body;
+    const { title, date, time, clientName, vetId } = req.body;
 
     if (!title || !date || !time || !clientName) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
-    const newAppointment = new Appointment({
+    // ✅ Create the appointment
+    const newAppointment = await Appointment.create({
       title,
       date,
       time,
       clientName,
+      vetId: vetId || null,
+      userId: req.user._id, // ✅ Associate with logged-in user
     });
 
-    await newAppointment.save();
-    res.status(201).json({ message: "Appointment created successfully", appointment: newAppointment });
-
+    res.status(201).json(newAppointment);
   } catch (error) {
-    res.status(500).json({ message: "Server error. Please try again later." });
+    console.error("❌ Appointment creation error:", error);
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 });
+
 
 // ✅ GET /api/dashboard/appointments → Fetch all appointments
 // router.get("/appointments", async (req, res) => {
