@@ -134,14 +134,14 @@ export default function DashboardPage() {
             className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
           >
             <Users className="h-4 w-4" />
-            Patients
+            Framers
           </Link>
           <Link
             href="/dashboard/vet/records"
             className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
           >
             <ClipboardCheck className="h-4 w-4" />
-            Medical Records
+            Farmer Records
           </Link>
         </nav>
       </aside>
@@ -177,7 +177,7 @@ export default function DashboardPage() {
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Network Size</CardTitle>
+                <CardTitle className="text-sm font-medium">Network Space</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -186,7 +186,7 @@ export default function DashboardPage() {
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Response Rate</CardTitle>
+                <CardTitle className="text-sm font-medium">Records</CardTitle>
                 <Activity className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
