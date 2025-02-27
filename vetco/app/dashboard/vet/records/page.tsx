@@ -94,10 +94,10 @@ export default function PatientsPage() {
             <MessageSquare className="h-4 w-4" /> Messages
           </Link>
           <Link href="/dashboard/vet/patients" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent">
-            <Users className="h-4 w-4" /> Patients
+            <Users className="h-4 w-4" /> Farmers
           </Link>
           <Link href="/dashboard/vet/records" className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
-            <ClipboardCheck className="h-4 w-4" /> Medical Records
+            <ClipboardCheck className="h-4 w-4" /> Farmer Records
           </Link>
         </nav>
       </aside>
@@ -106,8 +106,8 @@ export default function PatientsPage() {
       <main className="flex-1">
         <div className="border-b">
           <div className="flex h-14 items-center justify-between px-4">
-            <h1 className="text-lg font-semibold">Patient Medical Records</h1>
-            <Button onClick={() => setShowModal(true)}>Add Medical Record</Button>
+            <h1 className="text-lg font-semibold">farmer Records</h1>
+            <Button onClick={() => setShowModal(true)}>Add Farmer Record</Button>
 
           </div>
         </div>
@@ -131,7 +131,7 @@ export default function PatientsPage() {
           {/* Patient Records */}
           <div className="grid gap-4 mt-6 md:grid-cols-2 lg:grid-cols-3">
             {loading ? (
-              <p className="text-center text-sm text-muted-foreground">Loading patient records...</p>
+              <p className="text-center text-sm text-muted-foreground">Loading  records...</p>
             ) : filteredPatients.length > 0 ? (
               filteredPatients.map((patient) => (
                 <Card key={patient._id}>
@@ -151,7 +151,7 @@ export default function PatientsPage() {
                 </Card>
               ))
             ) : (
-              <p className="text-center text-sm text-muted-foreground">No patient records found.</p>
+              <p className="text-center text-sm text-muted-foreground">No farmer records found.</p>
             )}
           </div>
         </div>
