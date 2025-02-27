@@ -102,7 +102,7 @@ export default function AppointmentsPage() {
           </Link>
           <Link href="/dashboard/network" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent">
             <Users className="h-4 w-4" />
-            My Records
+            Farmer Records
           </Link>
         </nav>
       </aside>

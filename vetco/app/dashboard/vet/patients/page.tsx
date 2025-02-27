@@ -106,14 +106,14 @@ export default function PatientsPage() {
             className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
           >
             <Users className="h-4 w-4" />
-            Patients
+            farmers
           </Link>
           <Link
             href="/dashboard/vet/records"
             className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
           >
             <ClipboardCheck className="h-4 w-4" />
-            Medical Records
+            Animal Records
           </Link>
         </nav>
       </aside>
@@ -122,8 +122,8 @@ export default function PatientsPage() {
       <main className="flex-1">
         <div className="border-b">
           <div className="flex h-14 items-center justify-between px-4">
-            <h1 className="text-lg font-semibold">My Patients</h1>
-            <Button>Add New Patient</Button>
+            <h1 className="text-lg font-semibold">Farmer</h1>
+            <Button>Add New farmer records</Button>
           </div>
         </div>
 
@@ -146,7 +146,7 @@ export default function PatientsPage() {
           {/* Patient Listings */}
           <div className="grid gap-4 mt-6 md:grid-cols-2 lg:grid-cols-3">
             {loading ? (
-              <p className="text-center text-sm text-muted-foreground">Loading patients...</p>
+              <p className="text-center text-sm text-muted-foreground">Loading ...</p>
             ) : filteredPatients.length > 0 ? (
               filteredPatients.map((patient) => (
                 <Card key={patient._id}>
@@ -163,7 +163,7 @@ export default function PatientsPage() {
                 </Card>
               ))
             ) : (
-              <p className="text-center text-sm text-muted-foreground">No patients found.</p>
+              <p className="text-center text-sm text-muted-foreground">No farmers found.</p>
             )}
           </div>
         </div>
