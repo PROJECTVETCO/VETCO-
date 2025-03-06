@@ -17,6 +17,12 @@ export default function AppointmentsPage() {
     clientName: string;
   }
 
+  interface NewAppointmentModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onAppointmentCreated: () => void;
+  }
+
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -187,7 +193,12 @@ export default function AppointmentsPage() {
       </main>
 
       {/* New Appointment Modal */}
-      {showModal && <NewAppointmentModal isOpen={showModal} onClose={() => setShowModal(false)} onAppointmentCreated={() => setShowModal(false)} />}
+      <NewAppointmentModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onAppointmentCreated={() => setShowModal(false)}
+      />
+
     </div>
   );
 }
