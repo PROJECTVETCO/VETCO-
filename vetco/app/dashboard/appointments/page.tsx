@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, MessageSquare, Users, Activity } from "lucide-react";
 import Link from "next/link";
-import NewAppointmentModal from "@/components/NewAppointmentModal"; // ✅ Import the Modal
+import NewAppointmentModal from "@/components/NewAppointmentModal";
+
 
 export default function AppointmentsPage() {
   interface Appointment {
@@ -193,12 +194,7 @@ export default function AppointmentsPage() {
       </main>
 
       {/* New Appointment Modal */}
-      <NewAppointmentModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        onAppointmentCreated={() => setShowModal(false)}
-      />
-
+      {showModal && <NewAppointmentModal isOpen={showModal} onClose={() => setShowModal(false)} onAppointmentCreated={() => setShowModal(false)} />}
     </div>
   );
 }
