@@ -1,7 +1,37 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calendar, MessageSquare, AlertCircle, Activity } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Calendar, MessageSquare, AlertCircle, Activity, PhoneCall, MapPin, Briefcase } from "lucide-react"
+
+const vets = [
+  {
+    id: 1,
+    name: "Dr. James Smith",
+    expertise: "Large Animal Medicine",
+    location: "Nairobi, Kenya",
+    contact: "+254 712 345 678",
+    availability: "Mon - Fri: 9 AM - 5 PM",
+    profilePic: "/images/vet1.jpg", // Replace with actual uploaded image path
+  },
+  {
+    id: 2,
+    name: "Dr. Angela Mwangi",
+    expertise: "Dairy Cattle Health",
+    location: "Kisumu, Kenya",
+    contact: "+254 798 765 432",
+    availability: "Weekends Only",
+    profilePic: "/images/vet2.jpg",
+  },
+  {
+    id: 3,
+    name: "Dr. Peter Okello",
+    expertise: "Poultry & Livestock",
+    location: "Mombasa, Kenya",
+    contact: "+254 711 223 344",
+    availability: "Mon - Sat: 8 AM - 6 PM",
+    profilePic: "/images/vet3.jpg",
+  },
+];
 
 export default function FarmerDashboard() {
   return (
@@ -15,31 +45,19 @@ export default function FarmerDashboard() {
           </Link>
         </div>
         <nav className="space-y-1 p-4">
-          <Link
-            href="/dashboard/farmer"
-            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-          >
+          <Link href="/dashboard/farmer" className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
             <Activity className="h-4 w-4" />
             Dashboard
           </Link>
-          <Link
-            href="/dashboard/farmer/appointments"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
-          >
+          <Link href="/dashboard/farmer/appointments" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent">
             <Calendar className="h-4 w-4" />
             Appointments
           </Link>
-          <Link
-            href="/dashboard/farmer/messages"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
-          >
+          <Link href="/dashboard/farmer/messages" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent">
             <MessageSquare className="h-4 w-4" />
             Messages
           </Link>
-          <Link
-            href="/dashboard/farmer/alerts"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
-          >
+          <Link href="/dashboard/farmer/alerts" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent">
             <AlertCircle className="h-4 w-4" />
             Health Alerts
           </Link>
@@ -56,85 +74,33 @@ export default function FarmerDashboard() {
         </div>
 
         <div className="p-4">
-          {/* Stats */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Animals</CardTitle>
-                <Activity className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">25</div>
-                <p className="text-xs text-muted-foreground">+2 from last month</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Upcoming Appointments</CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">3</div>
-                <p className="text-xs text-muted-foreground">Next: Tomorrow at 10:00 AM</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Chats</CardTitle>
-                <MessageSquare className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">2</div>
-                <p className="text-xs text-muted-foreground">1 new message</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Health Alerts</CardTitle>
-                <AlertCircle className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">1</div>
-                <p className="text-xs text-muted-foreground">Vaccination due in 5 days</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Recent Activity */}
+          {/* Available Vets Section */}
           <Card className="mt-6">
             <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Your latest interactions and updates</CardDescription>
+              <CardTitle>Available Vets</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="h-8 w-8 rounded-full bg-green-100"></div>
-                  <div>
-                    <p className="text-sm font-medium">Appointment scheduled</p>
-                    <p className="text-sm text-muted-foreground">Tomorrow at 10:00 AM with Dr. Smith</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="h-8 w-8 rounded-full bg-blue-100"></div>
-                  <div>
-                    <p className="text-sm font-medium">New message received</p>
-                    <p className="text-sm text-muted-foreground">From Dr. Johnson about cattle vaccination</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="h-8 w-8 rounded-full bg-yellow-100"></div>
-                  <div>
-                    <p className="text-sm font-medium">Health alert</p>
-                    <p className="text-sm text-muted-foreground">Vaccination due for 5 cows in 5 days</p>
-                  </div>
-                </div>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {vets.map((vet) => (
+                  <Card key={vet.id} className="shadow-md p-4">
+                    <div className="flex items-center gap-4">
+                      <img src={vet.profilePic} alt={vet.name} className="h-16 w-16 rounded-full object-cover border" />
+                      <div>
+                        <h2 className="text-lg font-semibold">{vet.name}</h2>
+                        <p className="text-sm text-muted-foreground flex items-center gap-1"><Briefcase className="h-4 w-4" /> {vet.expertise}</p>
+                        <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="h-4 w-4" /> {vet.location}</p>
+                        <p className="text-sm text-muted-foreground flex items-center gap-1"><PhoneCall className="h-4 w-4" /> {vet.contact}</p>
+                        <p className="text-sm text-muted-foreground flex items-center gap-1"><Calendar className="h-4 w-4" /> {vet.availability}</p>
+                        <Button className="mt-2" variant="default">Book Appointment</Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
               </div>
             </CardContent>
           </Card>
         </div>
       </main>
     </div>
-  )
+  );
 }
-
