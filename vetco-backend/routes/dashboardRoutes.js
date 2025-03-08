@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Appointment = require("../models/Appointment");
+const Appoint = require("../models/AppointmentDoc");
 const { protect } = require("../middleware/authMiddleware");
 
 // ✅ POST /api/dashboard/appointments → Create a new appointment
@@ -187,6 +188,51 @@ router.get("/recent-activity", protect, async (req, res) => {
     res.status(500).json({ message: "Server error. Try again later." });
   }
 });
+
+router.post("/appointments/new", protect, async (req, res) => {
+  try {
+    const { title, date, time, clientName, vetId, message } = req.body;
+    
+    if (!title || !date || !time || !clientName) {
+      return res.status(400).json({ message: "All fields are required." });
+    }
+
+    // Create the appointment
+    const newAppointment = await Appoint.create({
+      title,
+      date,
+      time,
+      clientName,
+      vetId: vetId || null,
+      message,
+      userId: req.user._id,
+    });
+
+    res.status(201).json(newAppointment);
+  } catch (error) {
+    console.error("❌ Appointment creation error:", error);
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
+  }
+});
+
+router.get("/appointments/new", protect, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const userAppointments = await Appoint.find({ userId })
+      .sort({ date: 1 })
+      .populate("vetId", "fullName email");
+
+    if (!userAppointments.length) {
+      return res.status(404).json({ message: "No appointments found for this user." });
+    }
+
+    res.status(200).json(userAppointments);
+  } catch (error) {
+    res.status(500).json({ message: "Server error. Please try again later.", error: error.message });
+  }
+});
+
+
 
 
 module.exports = router;
