@@ -7,8 +7,8 @@ import { useToast } from "@/components/ui/use-toast";
 const doctors = [
   {
     id: 1,
-    name: "Dr Okiriya Jude",
-    specialty: "Veterinary Surgeon",
+    name: "Dr Okiria Jude",
+    specialty: "Vaccination",
     rating: 4,
     nextAvailable: "Tomorrow 10:00 AM",
     location: "Kampala, Uganda",
@@ -16,7 +16,7 @@ const doctors = [
   },
   {
     id: 2,
-    name: "Rehemah",
+    name: "Dr Byaruhanga Philp",
     specialty: "Animal Nutritionist",
     rating: 5,
     nextAvailable: "Today 3:00 PM",
