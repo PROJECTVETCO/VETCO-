@@ -25,7 +25,7 @@ const doctors = [
   },
   {
     id: 3,
-    name: "Dr Nuru Katende",
+    name: "Dr Agnes Katende",
     specialty: "Veterinary Pathologist",
     rating: 4,
     nextAvailable: "Tomorrow 11:00 AM",
