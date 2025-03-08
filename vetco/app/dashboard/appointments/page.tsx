@@ -119,7 +119,7 @@ export default function AppointmentsPage() {
         <div className="border-b">
           <div className="flex h-14 items-center justify-between px-4">
             <h1 className="text-lg font-semibold">Appointments</h1>
-            <Button onClick={() => setShowModal(true)}>New Appointment</Button> {/* ✅ Open Modal */}
+            {/* <Button onClick={() => setShowModal(true)}>New Appointment</Button> */}
           </div>
         </div>
 

@@ -85,7 +85,7 @@ export default function NewAppointmentModal({ onAppointmentCreated }: { onAppoin
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>New Appointment</Button>
+          <Button>New Appointment</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
