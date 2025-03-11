@@ -51,7 +51,7 @@ export default function LoginPage() {
 
       // ✅ Redirect based on userType (role-based navigation)
       if (data.user.userType === "vet") {
-        router.push("/dashboard/vet"); // Redirect vets to vet dashboard
+        router.push("/vet-dashboard"); // Redirect vets to vet dashboard
       } else {
         router.push("/dashboard"); // Redirect farmers to farmer dashboard
       }
