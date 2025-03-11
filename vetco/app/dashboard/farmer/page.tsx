@@ -74,7 +74,7 @@ export default function DashboardPage() {
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-600">
                 <span className="text-sm font-medium text-white">V</span>
               </div>
-              <span className="text-lg font-semibold">VetCo</span>
+              <span className="text-lg font-semibold"></span>
             </div>
             <nav className="ml-auto flex items-center gap-4 md:gap-6">
               <Button variant="ghost" size="icon">

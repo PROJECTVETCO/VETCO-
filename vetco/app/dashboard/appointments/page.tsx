@@ -1,249 +1,271 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Calendar, MessageSquare, Users, Activity } from "lucide-react";
-import Link from "next/link";
-import NewAppointmentModal from "@/components/NewAppointmentModal";
+import { useState } from "react"
+import { Calendar, Clock, Search, X } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
+import { toast } from "@/hooks/use-toast"
+import { NewAppointmentModal } from "@/components/new-appointment-modal"
+import { DashboardLayout } from "@/components/dashboard-layout"
 
 export default function AppointmentsPage() {
-  interface Appointment {
-    _id: string;
-    title: string;
-    date: string;
-    time: string;
-    clientName: string;
+  const [searchQuery, setSearchQuery] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [dateFilter, setDateFilter] = useState("")
+  const [refreshAppointments, setRefreshAppointments] = useState(false)
+
+  // Mock appointments data
+  const appointments = [
+    {
+      id: "APT001",
+      doctor: "Dr. James Smith",
+      date: "2025-03-10",
+      time: "10:00 AM",
+      status: "confirmed",
+      reason: "Regular checkup for cattle",
+      location: "Farm Visit",
+    },
+    {
+      id: "APT002",
+      doctor: "Dr. Angela Mwangi",
+      date: "2025-03-15",
+      time: "2:30 PM",
+      status: "pending",
+      reason: "Vaccination for poultry",
+      location: "Clinic Visit",
+    },
+    {
+      id: "APT003",
+      doctor: "Dr. Peter Okello",
+      date: "2025-03-20",
+      time: "9:00 AM",
+      status: "completed",
+      reason: "Follow-up on cattle treatment",
+      location: "Farm Visit",
+    },
+    {
+      id: "APT004",
+      doctor: "Dr. Sarah Kimani",
+      date: "2025-03-25",
+      time: "11:30 AM",
+      status: "cancelled",
+      reason: "Dairy cow milk production consultation",
+      location: "Virtual Consultation",
+    },
+    {
+      id: "APT005",
+      doctor: "Dr. James Smith",
+      date: "2025-04-02",
+      time: "3:00 PM",
+      status: "confirmed",
+      reason: "Seasonal vaccination for livestock",
+      location: "Farm Visit",
+    },
+  ]
+
+  // Filter appointments based on search and filters
+  const filteredAppointments = appointments.filter((appointment) => {
+    // Filter by search query
+    const matchesSearch =
+      searchQuery === "" ||
+      appointment.doctor.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      appointment.reason.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      appointment.id.toLowerCase().includes(searchQuery.toLowerCase())
+
+    // Filter by status
+    const matchesStatus = statusFilter === "all" || appointment.status === statusFilter
+
+    // Filter by date
+    const matchesDate = dateFilter === "" || appointment.date === dateFilter
+
+    return matchesSearch && matchesStatus && matchesDate
+  })
+
+  const cancelAppointment = (id: string) => {
+    toast({
+      title: "Appointment cancelled",
+      description: `Appointment ${id} has been cancelled`,
+    })
   }
 
-  interface NewAppointmentModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onAppointmentCreated: () => void;
+  const rescheduleAppointment = (id: string) => {
+    toast({
+      title: "Reschedule appointment",
+      description: `Opening reschedule form for appointment ${id}`,
+    })
   }
-
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showModal, setShowModal] = useState(false); // ✅ Manage modal state
-  const router = useRouter();
-
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-  useEffect(() => {
-    async function fetchAppointments() {
-      setLoading(true);
-      setError(null);
-
-      if (typeof window === "undefined") return;
-
-      const storedUser = localStorage.getItem("user");
-      const token = localStorage.getItem("token");
-
-      if (!storedUser || !token) {
-        setError("Unauthorized. Please log in.");
-        router.push("/login");
-        return;
-      }
-
-      const user = JSON.parse(storedUser);
-      const userId = user._id;
-
-      try {
-        const response = await fetch(
-          `${API_BASE_URL}/api/dashboard/appointments/user`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (response.status === 401) {
-          setError("Unauthorized. Please log in again.");
-          localStorage.removeItem("token");
-          router.push("/login");
-          return;
-        }
-
-        if (!response.ok) {
-          throw new Error(`Error ${response.status}: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        setAppointments(data);
-      } catch (error: any) {
-        console.error("Error fetching appointments:", error);
-        setError(error.message || "Failed to fetch appointments.");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchAppointments();
-  }, []);
 
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
-      <aside className="w-64 border-r bg-muted/40">
-        <div className="flex h-14 items-center border-b px-4">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-full bg-green-600"></div>
-            <span className="font-bold">VetCo</span>
-          </Link>
-        </div>
-        <nav className="space-y-1 p-4">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
-          >
-            <Activity className="h-4 w-4" />
-            Dashboard
-          </Link>
-          <Link
-            href="/dashboard/appointments"
-            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-          >
-            <Calendar className="h-4 w-4" />
-            Appointments
-          </Link>
-          <Link
-            href="/dashboard/messages"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
-          >
-            <MessageSquare className="h-4 w-4" />
-            Messages
-          </Link>
-          <Link
-            href="/dashboard/network"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent"
-          >
-            <Users className="h-4 w-4" />
-            Farmer Records
-          </Link>
-        </nav>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1">
-        <div className="border-b">
-          <div className="flex h-14 items-center justify-between px-4">
-            <h1 className="text-lg font-semibold">Appointments</h1>
-            <NewAppointmentModal
-              onAppointmentCreated={function (): void {
-                throw new Error("Function not implemented.");
-              }}
-            />
+    <DashboardLayout>
+      <div className="container p-4 md:p-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold">Appointments</h1>
+            <p className="text-muted-foreground">Manage your veterinary appointments</p>
+          </div>
+          <div className="mt-4 md:mt-0">
+            <NewAppointmentModal onAppointmentCreated={() => setRefreshAppointments(!refreshAppointments)} />
           </div>
         </div>
 
-        <div className="p-4">
-          {/* Appointment Summary */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Appointments
-                </CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{appointments.length}</div>
-                <p className="text-xs text-muted-foreground">Total scheduled</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Upcoming Appointments
-                </CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {
-                    appointments.filter((a) => new Date(a.date) > new Date())
-                      .length
-                  }
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Scheduled this week
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Cancelled Appointments
-                </CardTitle>
-                <Activity className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">1</div>
-                <p className="text-xs text-muted-foreground">Last 30 days</p>
-              </CardContent>
-            </Card>
+        <Card className="mb-6">
+          <CardHeader className="pb-3">
+            <CardTitle>Filters</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by doctor, reason, or ID"
+                  className="pl-8"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <div>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="confirmed">Confirmed</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="dateFilter" className="sr-only">
+                  Filter by date
+                </Label>
+                <Input id="dateFilter" type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} />
+                {dateFilter && (
+                  <Button variant="ghost" size="icon" onClick={() => setDateFilter("")} className="h-8 w-8">
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Clear date filter</span>
+                  </Button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="rounded-md border">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-border">
+              <thead>
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    ID
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Doctor
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Date & Time
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Reason
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Location
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-background divide-y divide-border">
+                {filteredAppointments.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                      No appointments found matching your filters
+                    </td>
+                  </tr>
+                ) : (
+                  filteredAppointments.map((appointment) => (
+                    <tr key={appointment.id}>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm">{appointment.id}</td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm">{appointment.doctor}</td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm">
+                        <div className="flex flex-col">
+                          <div className="flex items-center">
+                            <Calendar className="h-3 w-3 mr-1 text-muted-foreground" />
+                            {new Date(appointment.date).toLocaleDateString()}
+                          </div>
+                          <div className="flex items-center mt-1">
+                            <Clock className="h-3 w-3 mr-1 text-muted-foreground" />
+                            {appointment.time}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-sm">{appointment.reason}</td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm">{appointment.location}</td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm">
+                        <Badge
+                          className={
+                            appointment.status === "confirmed"
+                              ? "bg-green-100 text-green-800 hover:bg-green-100"
+                              : appointment.status === "pending"
+                                ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
+                                : appointment.status === "completed"
+                                  ? "bg-blue-100 text-blue-800 hover:bg-blue-100"
+                                  : "bg-red-100 text-red-800 hover:bg-red-100"
+                          }
+                        >
+                          {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm">
+                        {appointment.status === "confirmed" || appointment.status === "pending" ? (
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={() => rescheduleAppointment(appointment.id)}>
+                              Reschedule
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => cancelAppointment(appointment.id)}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              toast({
+                                title: "View details",
+                                description: `Viewing details for appointment ${appointment.id}`,
+                              })
+                            }}
+                          >
+                            View Details
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-
-          {/* Recent Appointments */}
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>Upcoming Appointments</CardTitle>
-              <CardDescription>Next scheduled appointments</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <p>Loading appointments...</p>
-              ) : error ? (
-                <p className="text-red-500 text-sm">{error}</p>
-              ) : appointments.length === 0 ? (
-                <p className="text-muted-foreground">
-                  No upcoming appointments.
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  {appointments.map((appointment) => (
-                    <div
-                      key={appointment._id}
-                      className="flex items-center gap-4"
-                    >
-                      <div className="h-8 w-8 rounded-full bg-green-100"></div>
-                      <div>
-                        <p className="text-sm font-medium">
-                          {appointment.title}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(appointment.date).toLocaleDateString()} at{" "}
-                          {appointment.time} - {appointment.clientName}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </div>
-      </main>
-
-      {/* New Appointment Modal */}
-      {/* {showModal && (
-        <NewAppointmentModal
-          isOpen={showModal}
-          onClose={() => setShowModal(false)}
-          onAppointmentCreated={() => setShowModal(false)}
-        />
-      )} */}
-    </div>
-  );
+      </div>
+    </DashboardLayout>
+  )
 }
+

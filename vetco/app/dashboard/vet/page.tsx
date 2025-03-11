@@ -104,7 +104,7 @@ export default function DashboardPage() {
         <div className="flex h-14 items-center border-b px-4">
           <Link href="/" className="flex items-center gap-2">
             <div className="h-6 w-6 rounded-full bg-green-600"></div>
-            <span className="font-bold">VetCo</span>
+            <span className="font-bold"></span>
           </Link>
         </div>
         <nav className="space-y-1 p-4">
