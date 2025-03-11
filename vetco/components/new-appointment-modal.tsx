@@ -204,7 +204,7 @@ export function NewAppointmentModal({ onAppointmentCreated }: NewAppointmentModa
       onAppointmentCreated()
     } catch (error) {
       console.error("Error creating appointment:", error)
-      setError(error.message || "Failed to create appointment")
+      setError((error as Error).message || "Failed to create appointment")
     } finally {
       setLoading(false)
     }

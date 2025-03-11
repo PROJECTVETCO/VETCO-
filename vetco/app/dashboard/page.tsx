@@ -1,14 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Activity, AlertTriangle, Calendar, MessageSquare } from "lucide-react"
+import { Activity, AlertTriangle, Calendar, MessageSquare, Users } from "lucide-react"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "@/hooks/use-toast"
-import { NewAppointmentModal } from "@/components/new-appointment-modal"
-import { DoctorCarousel } from "@/components/doctor-carousel"
-import { DashboardLayout } from "@/components/dashboard-layout"
+import { NewAppointmentModal } from "../../components/new-appointment-modal"
+import { DoctorCarousel } from "../../components/doctor-carousel"
+import { DashboardLayout } from "../../components/dashboard-layout";
 
 export default function DashboardPage() {
   const [refreshAppointments, setRefreshAppointments] = useState(false)
@@ -104,7 +104,11 @@ export default function DashboardPage() {
         console.log("✅ Activity Data Received:", activityData) // Debugging: Log API response
       } catch (error) {
         console.error("🔥 Error fetching dashboard data:", error)
-        setError(error.message || "Failed to fetch data.")
+        if (error instanceof Error) {
+          setError(error.message || "Failed to fetch data.")
+        } else {
+          setError("Failed to fetch data.")
+        }
       } finally {
         setLoading(false)
       }
@@ -150,7 +154,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Farm Snapshot / Stats */}
-        <div className="mb-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+        <div className="mb-6 grid gap-4 sm:grid-cols-2 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Appointments</CardTitle>
@@ -173,12 +177,22 @@ export default function DashboardPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Cancelled Appointments</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Network Size</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">3</div>
-              <p className="text-xs text-muted-foreground">Last 30 days</p>
+              <div className="text-2xl font-bold">24</div>
+              <p className="text-xs text-muted-foreground">+4 from last month</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Response Rate</CardTitle>
+              <Activity className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">95%</div>
+              <p className="text-xs text-muted-foreground">+2% from last month</p>
             </CardContent>
           </Card>
         </div>

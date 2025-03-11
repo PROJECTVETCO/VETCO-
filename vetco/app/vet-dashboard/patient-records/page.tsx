@@ -230,11 +230,13 @@ export default function PatientRecordsPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Farmers</SelectItem>
-                        {farmers.map((farmer) => (
-                          <SelectItem key={farmer.id} value={farmer.id}>
-                            {farmer.name}
-                          </SelectItem>
-                        ))}
+                        {farmers.map((farmer) => 
+                          farmer && (
+                            <SelectItem key={farmer.id} value={farmer.id}>
+                              {farmer.name}
+                            </SelectItem>
+                          )
+                        )}
                       </SelectContent>
                     </Select>
                   </div>

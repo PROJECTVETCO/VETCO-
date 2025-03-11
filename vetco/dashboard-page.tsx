@@ -392,7 +392,11 @@ export default function DashboardPage() {
         console.log("✅ Activity Data Received:", activityData) // Debugging: Log API response
       } catch (error) {
         console.error("🔥 Error fetching dashboard data:", error)
-        setError(error.message || "Failed to fetch data.")
+        if (error instanceof Error) {
+          setError(error.message || "Failed to fetch data.")
+        } else {
+          setError("Failed to fetch data.")
+        }
       } finally {
         setLoading(false)
       }

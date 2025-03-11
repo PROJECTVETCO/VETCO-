@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/hooks/use-toast"
-import { DashboardLayout } from "@/components/dashboard-layout"
+import { DashboardLayout } from  "../../../components/dashboard-layout";
 
 export default function KnowledgeHubPage() {
   const [searchQuery, setSearchQuery] = useState("")
