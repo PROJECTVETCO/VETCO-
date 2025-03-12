@@ -44,7 +44,7 @@ export default function KnowledgeHubPage() {
         "Monsoon season brings unique challenges for livestock health. This comprehensive guide covers preventive measures for common diseases that affect cattle, goats, and poultry during rainy seasons. Key topics include proper shelter management, vaccination schedules, feed adjustments, and early warning signs of common monsoon-related illnesses.\n\nProper drainage around animal housing is essential to prevent waterlogging and the growth of disease-causing organisms. Ensure that animal shelters have adequate ventilation while protecting from rain and wind. Regularly clean and disinfect all housing areas.\n\nVaccination schedules may need adjustment before monsoon season begins. Consult with your veterinarian about boosters for foot and mouth disease, hemorrhagic septicemia, and other seasonal concerns.\n\nDuring monsoon, feed quality can deteriorate rapidly due to moisture. Store feed in dry, elevated areas and inspect regularly for mold or spoilage. Consider supplementing with vitamins A, D, and E which help boost immunity.",
       image: "/placeholder.svg?height=200&width=400",
       date: "March 1, 2025",
-      author: "Dr. James Smith",
+      author: "Dr. Okiria Jude",
     },
     {
       id: 2,
