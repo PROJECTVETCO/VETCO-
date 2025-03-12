@@ -60,7 +60,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     {
       id: 1,
       title: "Appointment Confirmed",
-      message: "Your appointment with Dr. James Smith is confirmed for tomorrow at 10:00 AM.",
+      message: "Your appointment with Dr. Okiria Jude is confirmed for tomorrow at 10:00 AM.",
       time: "1 hour ago",
       read: false,
     },
