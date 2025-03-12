@@ -44,7 +44,7 @@ export default function DashboardPage() {
               id: "1",
               color: "green",
               status: "Appointment Confirmed",
-              description: "Dr. James Smith will visit on March 10, 2025",
+              description: "Dr. Okiria Jude will visit on March 10, 2025",
             },
             {
               id: "2",
@@ -126,7 +126,7 @@ export default function DashboardPage() {
       content: "Monsoon season brings unique challenges for livestock health...",
       image: "/placeholder.svg?height=200&width=400",
       date: "March 1, 2025",
-      author: "Dr. James Smith",
+      author: "Dr. Okiria Jude",
     },
     {
       id: 2,
