@@ -29,132 +29,68 @@ interface NewAppointmentModalProps {
 }
 
 export function NewAppointmentModal({ onAppointmentCreated }: NewAppointmentModalProps) {
-  const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [selectedDate, setSelectedDate] = useState("")
-  const [selectedVet, setSelectedVet] = useState("")
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState("")
-  const [appointmentType, setAppointmentType] = useState("farm-visit")
-  const [availableVets, setAvailableVets] = useState<Vet[]>([])
-  const [filteredVets, setFilteredVets] = useState<Vet[]>([])
-  const [specialtyFilter, setSpecialtyFilter] = useState("all")
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedVet, setSelectedVet] = useState("");
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState("");
+  const [appointmentType, setAppointmentType] = useState("farm-visit");
+  const [availableVets, setAvailableVets] = useState<Vet[]>([]);
+  const [filteredVets, setFilteredVets] = useState<Vet[]>([]);
+  const [specialtyFilter, setSpecialtyFilter] = useState("all");
 
   interface Vet {
-    id: string
-    name: string
-    specialty: string
-    location: string
-    rating: number
-    avatar: string
+    id: string;
+    name: string;
+    specialty: string;
+    location: string;
+    rating: number;
+    avatar: string;
     availableSlots: {
-      date: string
-      slots: string[]
-    }[]
+      date: string;
+      slots: string[];
+    }[];
   }
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://vetco.onrender.com"
-
-  // Mock data for available vets
-  const mockVets: Vet[] = [
-    {
-      id: "1",
-      name: "Dr. James Smith",
-      specialty: "Large Animal Medicine",
-      location: "Nairobi, Kenya",
-      rating: 4.8,
-      avatar: "/placeholder.svg?height=64&width=64",
-      availableSlots: [
-        {
-          date: new Date().toISOString().split("T")[0],
-          slots: ["09:00", "10:00", "11:00", "14:00", "15:00"],
-        },
-        {
-          date: new Date(Date.now() + 86400000).toISOString().split("T")[0], // Tomorrow
-          slots: ["09:00", "10:00", "13:00", "14:00"],
-        },
-        {
-          date: new Date(Date.now() + 172800000).toISOString().split("T")[0], // Day after tomorrow
-          slots: ["11:00", "13:00", "16:00"],
-        },
-      ],
-    },
-    {
-      id: "2",
-      name: "Dr. Angela Mwangi",
-      specialty: "Dairy Cattle Health",
-      location: "Kisumu, Kenya",
-      rating: 4.5,
-      avatar: "/placeholder.svg?height=64&width=64",
-      availableSlots: [
-        {
-          date: new Date().toISOString().split("T")[0],
-          slots: ["10:00", "11:00", "15:00", "16:00"],
-        },
-        {
-          date: new Date(Date.now() + 86400000).toISOString().split("T")[0], // Tomorrow
-          slots: ["09:00", "13:00", "14:00"],
-        },
-      ],
-    },
-    {
-      id: "3",
-      name: "Dr. Peter Okello",
-      specialty: "Poultry & Livestock",
-      location: "Mombasa, Kenya",
-      rating: 4.9,
-      avatar: "/placeholder.svg?height=64&width=64",
-      availableSlots: [
-        {
-          date: new Date(Date.now() + 86400000).toISOString().split("T")[0], // Tomorrow
-          slots: ["10:00", "11:00", "14:00", "15:00"],
-        },
-        {
-          date: new Date(Date.now() + 172800000).toISOString().split("T")[0], // Day after tomorrow
-          slots: ["09:00", "10:00", "13:00", "16:00"],
-        },
-      ],
-    },
-  ]
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://vetco.onrender.com";
 
   useEffect(() => {
-    // In a real app, this would be an API call to fetch available vets
-    // For now, we'll use mock data
-    setAvailableVets(mockVets)
-    setFilteredVets(mockVets)
-  }, [])
+    async function fetchVets() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/vets`);
+        if (!response.ok) throw new Error("Failed to fetch vets");
+        const data = await response.json();
+        setAvailableVets(data);
+        setFilteredVets(data);
+      } catch (err) {
+        console.error("Error fetching vets:", err);
+      }
+    }
+    fetchVets();
+  }, []);
 
   useEffect(() => {
-    // Filter vets based on specialty
     if (specialtyFilter === "all") {
-      setFilteredVets(availableVets)
+      setFilteredVets(availableVets);
     } else {
       setFilteredVets(
-        availableVets.filter((vet) => vet.specialty.toLowerCase().includes(specialtyFilter.toLowerCase())),
-      )
+        availableVets.filter((vet) => vet.specialty.toLowerCase().includes(specialtyFilter.toLowerCase()))
+      );
     }
-  }, [specialtyFilter, availableVets])
+  }, [specialtyFilter, availableVets]);
 
   useEffect(() => {
-    // Reset selected vet and time slot when date changes
-    setSelectedVet("")
-    setSelectedTimeSlot("")
-  }, [selectedDate])
-
-  const getAvailableTimeSlots = (vetId: string) => {
-    const vet = availableVets.find((v) => v.id === vetId)
-    if (!vet) return []
-
-    const dateSlots = vet.availableSlots.find((slot) => slot.date === selectedDate)
-    return dateSlots?.slots || []
-  }
+    setSelectedVet("");
+    setSelectedTimeSlot("");
+  }, [selectedDate]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-    const formData = new FormData(e.currentTarget)
+    const formData = new FormData(e.currentTarget);
     const appointmentData = {
       date: selectedDate,
       time: selectedTimeSlot,
@@ -162,24 +98,11 @@ export function NewAppointmentModal({ onAppointmentCreated }: NewAppointmentModa
       type: appointmentType,
       reason: formData.get("reason"),
       notes: formData.get("notes"),
-    }
+    };
 
     try {
-      const token = localStorage.getItem("token")
-
-      if (!token) {
-        console.log("Demo mode: Would create appointment in production")
-        // In demo mode, just simulate success
-        setTimeout(() => {
-          setOpen(false)
-          toast({
-            title: "Appointment scheduled",
-            description: `Your appointment has been scheduled for ${selectedDate} at ${selectedTimeSlot}`,
-          })
-          onAppointmentCreated()
-        }, 1000)
-        return
-      }
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Unauthorized");
 
       const response = await fetch(`${API_BASE_URL}/api/appointments`, {
         method: "POST",
@@ -188,27 +111,22 @@ export function NewAppointmentModal({ onAppointmentCreated }: NewAppointmentModa
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(appointmentData),
-        credentials: "include",
-      })
+      });
 
-      if (!response.ok) {
-        throw new Error(`Failed to create appointment: ${response.statusText}`)
-      }
+      if (!response.ok) throw new Error("Failed to create appointment");
 
-      // Success
-      setOpen(false)
+      setOpen(false);
       toast({
         title: "Appointment scheduled",
-        description: `Your appointment has been scheduled for ${selectedDate} at ${selectedTimeSlot}`,
-      })
-      onAppointmentCreated()
+        description: `Your appointment is set for ${selectedDate} at ${selectedTimeSlot}`,
+      });
+      onAppointmentCreated();
     } catch (error) {
-      console.error("Error creating appointment:", error)
-      setError((error as Error).message || "Failed to create appointment")
+      setError((error as Error).message || "Failed to create appointment");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

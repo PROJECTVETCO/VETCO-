@@ -6,7 +6,7 @@ import { Activity, AlertTriangle, Calendar, MessageSquare, Users } from "lucide-
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "@/hooks/use-toast"
-import { NewAppointmentModal } from "../../components/new-appointment-modal"
+import  NewAppointmentModal  from "../../components/NewAppointmentModal"
 import { DoctorCarousel } from "../../components/doctor-carousel"
 import { DashboardLayout } from "../../components/dashboard-layout";
 
