@@ -69,7 +69,7 @@ export function DoctorCarousel() {
           return
         }
 
-        const response = await fetch(`${API_BASE_URL}/api/doctors/get`, {
+        const response = await fetch(`${API_BASE_URL}/api/doctor/get`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
