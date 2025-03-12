@@ -4,7 +4,7 @@ const Doctor = require("../models/doctor");
 
 
 // Get all doctors
-app.get("/get", async (req, res) => {
+router.get("/get", async (req, res) => {
     try {
       const doctors = await Doctor.find();
       res.json(doctors);
@@ -14,7 +14,7 @@ app.get("/get", async (req, res) => {
   });
   
   // Add a new doctor
-  app.post("/post", async (req, res) => {
+ router.post("/post", async (req, res) => {
     try {
       const doctor = new Doctor(req.body);
       await doctor.save();
