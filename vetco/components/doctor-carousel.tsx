@@ -21,6 +21,7 @@ export function DoctorCarousel() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [selectedDoctor, setSelectedDoctor] = useState(null)
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://vetco.onrender.com"
 
@@ -68,7 +69,7 @@ export function DoctorCarousel() {
           return
         }
 
-        const response = await fetch(`${API_BASE_URL}/api/doctors`, {
+        const response = await fetch(`${API_BASE_URL}/api/doctors/get`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -200,9 +201,9 @@ export function DoctorCarousel() {
                   </p>
                 </div>
               </div>
-              <Button className="mt-3 w-full" size="sm">
-                Book Appointment
-              </Button>
+              <Button className="mt-3 w-full" size="sm" onClick={() => setSelectedDoctor(doctor)}>
+              Book Appointment
+            </Button>
             </div>
           </Card>
         ))}
