@@ -40,7 +40,7 @@ export function DoctorCarousel() {
               id: 1,
               name: "Dr. James Smith",
               expertise: "Large Animal Medicine",
-              location: "Nairobi, Kenya",
+              location: "Uganda, Kenya",
               contact: "+254 712 345 678",
               availability: "Mon - Fri: 9 AM - 5 PM",
               profilePic: "/placeholder.svg?height=64&width=64",
