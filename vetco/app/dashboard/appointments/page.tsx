@@ -23,7 +23,7 @@ export default function AppointmentsPage() {
   const appointments = [
     {
       id: "APT001",
-      doctor: "Dr. James Smith",
+      doctor: "Dr.Okiria Jude",
       date: "2025-03-10",
       time: "10:00 AM",
       status: "confirmed",
@@ -59,7 +59,7 @@ export default function AppointmentsPage() {
     },
     {
       id: "APT005",
-      doctor: "Dr. James Smith",
+      doctor: "Dr. James Olupot",
       date: "2025-04-02",
       time: "3:00 PM",
       status: "confirmed",
