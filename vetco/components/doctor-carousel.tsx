@@ -201,9 +201,9 @@ export function DoctorCarousel() {
                   </p>
                 </div>
               </div>
-              <Button className="mt-3 w-full" size="sm" onClick={() => setSelectedDoctor(doctor)}>
+              {/* <Button className="mt-3 w-full" size="sm" onClick={() => setSelectedDoctor(doctor)}>
               Book Appointment
-            </Button>
+            </Button> */}
             </div>
           </Card>
         ))}
